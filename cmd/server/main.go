@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/kosalnik/metrics/internal/application"
+	"github.com/kosalnik/metrics/internal/server"
 )
 
 func main() {
-	app := application.NewApp()
+	app := server.NewApp()
 	err := app.Serve()
 	if err != nil {
 		panic(err)
