@@ -18,7 +18,8 @@ func NewApp() *App {
 
 func (app *App) Serve() error {
 	mux := http.NewServeMux()
-	mux.HandleFunc(`/update/gauge/`, handler.HandleUpdateGauge(app.Storage))
-	mux.HandleFunc(`/update/counter/`, handler.HandleUpdateCounter(app.Storage))
+	mux.Handle(`/update/`, handler.NewUpdateHandler(app.Storage))
+	//mux.HandleFunc(`/update/gauge/`, handler.HandleUpdateGauge(app.Storage))
+	//mux.HandleFunc(`/update/counter/`, handler.HandleUpdateCounter(app.Storage))
 	return http.ListenAndServe(`:8080`, mux)
 }
