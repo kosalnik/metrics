@@ -52,7 +52,7 @@ func HandleUpdateCounter(s storage.Storage) func(http.ResponseWriter, *http.Requ
 func parsePath(u string) ([]string, error) {
 	p := strings.Split(u, "/")
 	if len(p) != 5 {
-		return nil, fmt.Errorf("Wrong request %v %v", len(p), p)
+		return nil, fmt.Errorf("wrong request %v %v", len(p), p)
 	}
 	return p[3:], nil
 }

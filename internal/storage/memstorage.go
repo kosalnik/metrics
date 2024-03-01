@@ -22,7 +22,7 @@ type MemStorageItem struct {
 	index int
 }
 
-var s *MemStorage = NewStorage()
+var s = NewStorage()
 
 func NewStorage() *MemStorage {
 	return &MemStorage{
@@ -52,21 +52,21 @@ func (m *MemStorage) GetCounter(name string) *entity.CounterValue {
 func (m *MemStorage) SetGauge(name string, value float64) {
 	if item := m.GetGauge(name); item != nil {
 		item.Value = value
-		log.Println("SetGauge[%s]=%v", name, m.gauge[name].Value)
+		log.Printf("SetGauge[%s]=%v\n", name, m.gauge[name].Value)
 		return
 	}
 	item := entity.GaugeValue{Name: name, Value: value}
 	m.gauge[name] = &item
-	log.Println("SetGauge[%s]=%v", name, value)
+	log.Printf("SetGauge[%s]=%v\n", name, value)
 }
 
 func (m *MemStorage) IncCounter(name string, value int64) {
 	if item := m.GetCounter(name); item != nil {
 		item.Value += value
-		log.Println("IncCounter[%s]=%v", name, m.counter[name].Value)
+		log.Printf("IncCounter[%s]=%v\n", name, m.counter[name].Value)
 		return
 	}
 	item := entity.CounterValue{Name: name, Value: value}
 	m.counter[name] = &item
-	log.Println("IncCounter[%s]=%v", name, value)
+	log.Printf("IncCounter[%s]=%v\n", name, value)
 }
