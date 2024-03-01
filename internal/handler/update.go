@@ -39,7 +39,7 @@ func (h *UpdateHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	msg := fmt.Sprintf("bad request. wrong type %v", mType)
-	http.Error(res, msg, http.StatusNotFound)
+	http.Error(res, msg, http.StatusBadRequest)
 }
 
 func HandleUpdateGauge(s storage.Storage, name, value string) func(http.ResponseWriter, *http.Request) {
