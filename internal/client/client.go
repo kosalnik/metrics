@@ -59,15 +59,21 @@ func (c *Client) pool() {
 }
 
 func (c *Client) sendGauge(k string, v float64) {
-	_, err := c.client.Post(fmt.Sprintf("%s/update/gauge/%s/%v", c.config.CollectorAddress, k, v), "text/plain", nil)
+	r, err := c.client.Post(fmt.Sprintf("%s/update/gauge/%s/%v", c.config.CollectorAddress, k, v), "text/plain", nil)
 	if err != nil {
-		log.Printf("Fail push: %s", err.Error())
+		log.Printf("fail push. %s", err.Error())
+	}
+	if err := r.Body.Close(); err != nil {
+		log.Printf("fail close body. %s", err.Error())
 	}
 }
 
 func (c *Client) sendCounter(k string, v int64) {
-	_, err := c.client.Post(fmt.Sprintf("%s/update/counter/%s/%v", c.config.CollectorAddress, k, v), "text/plain", nil)
+	r, err := c.client.Post(fmt.Sprintf("%s/update/counter/%s/%v", c.config.CollectorAddress, k, v), "text/plain", nil)
 	if err != nil {
 		log.Printf("Fail push: %s", err.Error())
+	}
+	if err := r.Body.Close(); err != nil {
+		log.Printf("fail close body. %s", err.Error())
 	}
 }
