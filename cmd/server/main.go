@@ -1,7 +1,7 @@
 package main
 
 import (
-	"metrics/internal/application"
+	"github.com/kosalnik/metrics/internal/application"
 )
 
 func main() {

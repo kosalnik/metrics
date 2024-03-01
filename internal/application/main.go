@@ -1,8 +1,8 @@
 package application
 
 import (
-	"metrics/internal/handler"
-	"metrics/internal/storage"
+	"github.com/kosalnik/metrics/internal/handler"
+	"github.com/kosalnik/metrics/internal/storage"
 	"net/http"
 )
 

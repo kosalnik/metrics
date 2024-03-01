@@ -1,8 +1,8 @@
 package storage
 
 import (
+	"github.com/kosalnik/metrics/internal/entity"
 	"log"
-	"metrics/internal/entity"
 )
 
 type Storage interface {
@@ -25,7 +25,10 @@ type MemStorageItem struct {
 var s *MemStorage = NewStorage()
 
 func NewStorage() *MemStorage {
-	return &MemStorage{}
+	return &MemStorage{
+		gauge:   make(map[string]*entity.GaugeValue),
+		counter: make(map[string]*entity.CounterValue),
+	}
 }
 
 func GetStorage() *MemStorage {
@@ -49,6 +52,7 @@ func (m *MemStorage) GetCounter(name string) *entity.CounterValue {
 func (m *MemStorage) SetGauge(name string, value float64) {
 	if item := m.GetGauge(name); item != nil {
 		item.Value = value
+		log.Println("SetGauge[%s]=%v", name, m.gauge[name].Value)
 		return
 	}
 	item := entity.GaugeValue{Name: name, Value: value}
@@ -59,6 +63,7 @@ func (m *MemStorage) SetGauge(name string, value float64) {
 func (m *MemStorage) IncCounter(name string, value int64) {
 	if item := m.GetCounter(name); item != nil {
 		item.Value += value
+		log.Println("IncCounter[%s]=%v", name, m.counter[name].Value)
 		return
 	}
 	item := entity.CounterValue{Name: name, Value: value}

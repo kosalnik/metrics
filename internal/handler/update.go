@@ -2,8 +2,8 @@ package handler
 
 import (
 	"fmt"
+	"github.com/kosalnik/metrics/internal/storage"
 	"log"
-	"metrics/internal/storage"
 	"net/http"
 	"strconv"
 	"strings"
