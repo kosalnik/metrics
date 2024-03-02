@@ -85,6 +85,8 @@ func TestUpdateHandler_Handle(t *testing.T) {
 			srv := httptest.NewServer(r)
 			response, err := srv.Client().Post(srv.URL+tt.path, "text/plain", nil)
 			require.NoError(t, err)
+			err = response.Body.Close()
+			require.NoError(t, err)
 			assert.Equal(t, tt.want.statusCode, response.StatusCode)
 		})
 	}
