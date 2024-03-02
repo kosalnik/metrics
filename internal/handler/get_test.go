@@ -17,9 +17,11 @@ func TestGetHandler(t *testing.T) {
 		content string
 		status  int
 	}{
-		{"", "/value/gauge/g1", "13.1", http.StatusOK},
-		{"", "/value/counter/c1", "5", http.StatusOK},
-		{"", "/value/unk/u3", "Not Found\n", http.StatusNotFound},
+		{"valid gauge", "/value/gauge/g1", "13.1", http.StatusOK},
+		{"valid counter", "/value/counter/c1", "5", http.StatusOK},
+		{"invalid gauge", "/value/gauge/unknownGauge", "404 page not found\n", http.StatusNotFound},
+		{"invalid counter", "/value/counter/unknownCounter", "404 page not found\n", http.StatusNotFound},
+		{"invalid metric type", "/value/unk/u3", "Not Found\n", http.StatusNotFound},
 	}
 
 	app := server.NewApp()
@@ -36,7 +38,8 @@ func TestGetHandler(t *testing.T) {
 			content, err := io.ReadAll(res.Body)
 			require.NoError(t, err)
 			assert.Equal(t, tt.status, res.StatusCode)
-			res.Body.Close()
+			err = res.Body.Close()
+			require.NoError(t, err)
 			assert.Equal(t, tt.content, string(content))
 		})
 	}

@@ -24,6 +24,10 @@ func (h *GetHandler) Handler() func(w http.ResponseWriter, req *http.Request) {
 		mName := chi.URLParam(req, "name")
 		switch mType {
 		case "gauge":
+			if !h.storage.HasGauge(mName) {
+				http.NotFound(w, req)
+				return
+			}
 			v := h.storage.GetGauge(mName)
 			res := fmt.Sprintf("%v", v)
 			_, err := w.Write([]byte(res))
@@ -32,6 +36,10 @@ func (h *GetHandler) Handler() func(w http.ResponseWriter, req *http.Request) {
 			}
 			return
 		case "counter":
+			if !h.storage.HasCounter(mName) {
+				http.NotFound(w, req)
+				return
+			}
 			v := h.storage.GetCounter(mName)
 			res := fmt.Sprintf("%v", v)
 			_, err := w.Write([]byte(res))
