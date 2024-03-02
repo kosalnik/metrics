@@ -1,4 +1,4 @@
-package handler_test
+package handlers_test
 
 import (
 	"github.com/kosalnik/metrics/internal/server"
@@ -23,7 +23,8 @@ func TestGetAllHandler(t *testing.T) {
 	content, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
-	res.Body.Close()
+	err = res.Body.Close()
+	require.NoError(t, err)
 	expected := "g1 = 13.1\nc1 = 5\n"
 	assert.Equal(t, expected, string(content))
 }

@@ -1,8 +1,8 @@
-package client
+package metrics_provider
 
 import "runtime"
 
-func getMetrics() map[string]float64 {
+func GetMetrics() map[string]float64 {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	return map[string]float64{

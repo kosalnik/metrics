@@ -1,4 +1,4 @@
-package handler_test
+package handlers_test
 
 import (
 	"github.com/kosalnik/metrics/internal/server"
