@@ -2,10 +2,11 @@ package handler
 
 import (
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"github.com/kosalnik/metrics/internal/storage"
+	"log"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type UpdateHandler struct {
@@ -18,18 +19,11 @@ func NewUpdateHandler(s storage.Storage) *UpdateHandler {
 	}
 }
 
-func (h *UpdateHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		http.Error(res, "bad request method", http.StatusBadRequest)
-		return
-	}
-	p := strings.Split(req.URL.Path, "/")
-	if len(p) != 5 {
-		msg := fmt.Sprintf("bad request %v %v", len(p), p)
-		http.Error(res, msg, http.StatusNotFound)
-		return
-	}
-	mType, mName, mVal := p[2], p[3], p[4]
+func (h *UpdateHandler) Handle(res http.ResponseWriter, req *http.Request) {
+	mType := chi.URLParam(req, "type")
+	mName := chi.URLParam(req, "name")
+	mVal := chi.URLParam(req, "value")
+	log.Println(mType, mName, mVal)
 	switch mType {
 	case "gauge":
 		HandleUpdateGauge(h.Storage, mName, mVal)(res, req)

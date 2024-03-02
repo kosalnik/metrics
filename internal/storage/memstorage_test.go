@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"github.com/kosalnik/metrics/internal/entity"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -9,45 +8,45 @@ import (
 
 func TestMemStorage_GetCounter(t *testing.T) {
 	type storageState struct {
-		gauge   map[string]*entity.GaugeValue
-		counter map[string]*entity.CounterValue
+		gauge   map[string]float64
+		counter map[string]int64
 	}
 	tests := []struct {
 		name         string
 		storageState storageState
 		metricName   string
-		want         *entity.CounterValue
+		want         int64
 	}{
 		{
 			name: "empty storage",
 			storageState: storageState{
-				gauge:   map[string]*entity.GaugeValue{},
-				counter: map[string]*entity.CounterValue{},
+				gauge:   map[string]float64{},
+				counter: map[string]int64{},
 			},
 			metricName: "testCounter",
-			want:       nil,
+			want:       0,
 		},
 		{
 			name: "no gauge, counter exists",
 			storageState: storageState{
-				gauge: map[string]*entity.GaugeValue{},
-				counter: map[string]*entity.CounterValue{
-					"testCounter": {Name: "testCounter", Value: 3},
+				gauge: map[string]float64{},
+				counter: map[string]int64{
+					"testCounter": 3,
 				},
 			},
 			metricName: "testCounter",
-			want:       &entity.CounterValue{Name: "testCounter", Value: 3},
+			want:       3,
 		},
 		{
 			name: "gauge exists, no counter",
 			storageState: storageState{
-				gauge: map[string]*entity.GaugeValue{
-					"testCounter": {Name: "testCounter", Value: 3},
+				gauge: map[string]float64{
+					"testCounter": 3,
 				},
-				counter: map[string]*entity.CounterValue{},
+				counter: map[string]int64{},
 			},
 			metricName: "testCounter",
-			want:       nil,
+			want:       0,
 		},
 	}
 	for _, tt := range tests {
@@ -65,45 +64,45 @@ func TestMemStorage_GetCounter(t *testing.T) {
 
 func TestMemStorage_GetGauge(t *testing.T) {
 	type storageState struct {
-		gauge   map[string]*entity.GaugeValue
-		counter map[string]*entity.CounterValue
+		gauge   map[string]float64
+		counter map[string]int64
 	}
 	tests := []struct {
 		name         string
 		storageState storageState
 		metricName   string
-		want         *entity.GaugeValue
+		want         float64
 	}{
 		{
 			name: "empty storage",
 			storageState: storageState{
-				gauge:   map[string]*entity.GaugeValue{},
-				counter: map[string]*entity.CounterValue{},
+				gauge:   map[string]float64{},
+				counter: map[string]int64{},
 			},
 			metricName: "testCounter",
-			want:       nil,
+			want:       0,
 		},
 		{
 			name: "no gauge, counter exists",
 			storageState: storageState{
-				gauge: map[string]*entity.GaugeValue{},
-				counter: map[string]*entity.CounterValue{
-					"testCounter": {Name: "testCounter", Value: 3},
+				gauge: map[string]float64{},
+				counter: map[string]int64{
+					"testCounter": 3,
 				},
 			},
 			metricName: "testCounter",
-			want:       nil,
+			want:       0,
 		},
 		{
 			name: "gauge exists, no counter",
 			storageState: storageState{
-				gauge: map[string]*entity.GaugeValue{
-					"testCounter": {Name: "testCounter", Value: 3},
+				gauge: map[string]float64{
+					"testCounter": 3,
 				},
-				counter: map[string]*entity.CounterValue{},
+				counter: map[string]int64{},
 			},
 			metricName: "testCounter",
-			want:       &entity.GaugeValue{Name: "testCounter", Value: 3},
+			want:       3,
 		},
 	}
 	for _, tt := range tests {
@@ -121,8 +120,8 @@ func TestMemStorage_GetGauge(t *testing.T) {
 
 func TestMemStorage_IncCounter(t *testing.T) {
 	type storageState struct {
-		gauge   map[string]*entity.GaugeValue
-		counter map[string]*entity.CounterValue
+		gauge   map[string]float64
+		counter map[string]int64
 	}
 	type metric struct {
 		name  string
@@ -137,8 +136,8 @@ func TestMemStorage_IncCounter(t *testing.T) {
 		{
 			name: "empty storage",
 			storageState: storageState{
-				gauge:   map[string]*entity.GaugeValue{},
-				counter: map[string]*entity.CounterValue{},
+				gauge:   map[string]float64{},
+				counter: map[string]int64{},
 			},
 			metric: metric{name: "test", value: 3},
 			want:   3,
@@ -146,9 +145,9 @@ func TestMemStorage_IncCounter(t *testing.T) {
 		{
 			name: "no gauge, counter exists",
 			storageState: storageState{
-				gauge: map[string]*entity.GaugeValue{},
-				counter: map[string]*entity.CounterValue{
-					"test": {Name: "testCounter", Value: 2},
+				gauge: map[string]float64{},
+				counter: map[string]int64{
+					"test": 2,
 				},
 			},
 			metric: metric{name: "test", value: 3},
@@ -163,8 +162,7 @@ func TestMemStorage_IncCounter(t *testing.T) {
 			}
 			m.IncCounter(tt.metric.name, tt.metric.value)
 			actual := m.GetCounter(tt.metric.name)
-			assert.NotNil(t, actual)
-			assert.Equal(t, tt.want, actual.Value)
+			assert.Equal(t, tt.want, actual)
 		})
 	}
 }
@@ -175,8 +173,7 @@ func TestMemStorage_SetGauge(t *testing.T) {
 	m.SetGauge("test", 1)
 	v := m.GetGauge("test")
 	assert.NotNil(t, v)
-	assert.Equal(t, "test", v.Name)
-	assert.Equal(t, 1.0, v.Value)
+	assert.Equal(t, 1.0, v)
 }
 
 func TestNewStorage(t *testing.T) {

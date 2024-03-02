@@ -1,20 +1,12 @@
 package storage
 
 import (
-	"github.com/kosalnik/metrics/internal/entity"
-	"log"
+	"fmt"
 )
 
-type Storage interface {
-	GetGauge(name string) *entity.GaugeValue
-	GetCounter(name string) *entity.CounterValue
-	SetGauge(name string, value float64)
-	IncCounter(name string, value int64)
-}
-
 type MemStorage struct {
-	gauge   map[string]*entity.GaugeValue
-	counter map[string]*entity.CounterValue
+	gauge   map[string]float64
+	counter map[string]int64
 }
 
 type MemStorageItem struct {
@@ -24,43 +16,34 @@ type MemStorageItem struct {
 
 func NewStorage() *MemStorage {
 	return &MemStorage{
-		gauge:   make(map[string]*entity.GaugeValue),
-		counter: make(map[string]*entity.CounterValue),
+		gauge:   make(map[string]float64),
+		counter: make(map[string]int64),
 	}
 }
 
-func (m *MemStorage) GetGauge(name string) *entity.GaugeValue {
-	if ref, ok := m.gauge[name]; ok {
-		return ref
-	}
-	return nil
+func (m *MemStorage) GetGauge(name string) float64 {
+	return m.gauge[name]
 }
 
-func (m *MemStorage) GetCounter(name string) *entity.CounterValue {
-	if ref, ok := m.counter[name]; ok {
-		return ref
-	}
-	return nil
+func (m *MemStorage) GetCounter(name string) int64 {
+	return m.counter[name]
 }
 
 func (m *MemStorage) SetGauge(name string, value float64) {
-	if item := m.GetGauge(name); item != nil {
-		item.Value = value
-		log.Printf("SetGauge[%s]=%v\n", name, m.gauge[name].Value)
-		return
-	}
-	item := entity.GaugeValue{Name: name, Value: value}
-	m.gauge[name] = &item
-	log.Printf("SetGauge[%s]=%v\n", name, value)
+	m.gauge[name] = value
 }
 
 func (m *MemStorage) IncCounter(name string, value int64) {
-	if item := m.GetCounter(name); item != nil {
-		item.Value += value
-		log.Printf("IncCounter[%s]=%v\n", name, m.counter[name].Value)
-		return
+	m.counter[name] = m.counter[name] + value
+}
+
+func (m *MemStorage) GetPlain() map[string]string {
+	res := make(map[string]string, len(m.gauge)+len(m.counter))
+	for k, v := range m.gauge {
+		res[k] = fmt.Sprintf("%v", v)
 	}
-	item := entity.CounterValue{Name: name, Value: value}
-	m.counter[name] = &item
-	log.Printf("IncCounter[%s]=%v\n", name, value)
+	for k, v := range m.counter {
+		res[k] = fmt.Sprintf("%v", v)
+	}
+	return res
 }

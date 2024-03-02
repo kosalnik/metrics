@@ -1,6 +1,7 @@
-package handler
+package handler_test
 
 import (
+	"github.com/kosalnik/metrics/internal/server"
 	"github.com/kosalnik/metrics/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -9,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestUpdateHandler_ServeHTTP(t *testing.T) {
+func TestUpdateHandler_Handle(t *testing.T) {
 	type want struct {
 		statusCode int
 	}
@@ -79,16 +80,12 @@ func TestUpdateHandler_ServeHTTP(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &UpdateHandler{
-				Storage: tt.storage,
-			}
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest(tt.method, tt.path, nil)
-			h.ServeHTTP(w, req)
-			res := w.Result()
-			err := res.Body.Close()
+			app := server.NewApp()
+			r := app.GetRouter()
+			srv := httptest.NewServer(r)
+			response, err := srv.Client().Post(srv.URL+tt.path, "text/plain", nil)
 			require.NoError(t, err)
-			assert.Equal(t, tt.want.statusCode, w.Code)
+			assert.Equal(t, tt.want.statusCode, response.StatusCode)
 		})
 	}
 }
