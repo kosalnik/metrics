@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/metrics_provider"
+	"github.com/kosalnik/metrics/internal/metricprovider"
 	"log"
 	"math/rand"
 	"net/http"
@@ -51,7 +51,7 @@ func (c *Client) pool() {
 	for {
 		c.mu.Lock()
 		log.Println("Pool")
-		c.gauge = metrics_provider.GetMetrics()
+		c.gauge = metricprovider.GetMetrics()
 		c.poolCount = c.poolCount + 1
 		log.Println(c.poolCount)
 		c.mu.Unlock()
