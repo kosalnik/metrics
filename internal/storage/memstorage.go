@@ -22,17 +22,11 @@ type MemStorageItem struct {
 	index int
 }
 
-var s = NewStorage()
-
 func NewStorage() *MemStorage {
 	return &MemStorage{
 		gauge:   make(map[string]*entity.GaugeValue),
 		counter: make(map[string]*entity.CounterValue),
 	}
-}
-
-func GetStorage() *MemStorage {
-	return s
 }
 
 func (m *MemStorage) GetGauge(name string) *entity.GaugeValue {
