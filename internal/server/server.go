@@ -5,6 +5,7 @@ import (
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
 	"github.com/kosalnik/metrics/internal/storage"
+	"log"
 	"net/http"
 )
 
@@ -21,6 +22,7 @@ func NewApp(cfg config.ServerConfig) *App {
 }
 
 func (app *App) Serve() error {
+	log.Println("Listen " + app.config.Address)
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
 }
 

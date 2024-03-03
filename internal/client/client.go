@@ -27,6 +27,9 @@ func NewClient(config config.AgentConfig) *Client {
 }
 
 func (c *Client) Run() {
+	log.Println("Pool interval: " + c.config.PoolInterval.String())
+	log.Println("Report interval: " + c.config.ReportInterval.String())
+	log.Println("Collector address: " + c.config.CollectorAddress)
 	go c.pool()
 	c.push()
 }

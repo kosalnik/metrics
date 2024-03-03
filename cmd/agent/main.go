@@ -7,7 +7,7 @@ import (
 
 func main() {
 	cfg := config.NewConfig()
-	parseFlags(cfg.Agent)
+	parseFlags(&cfg.Agent)
 	app := client.NewClient(cfg.Agent)
 	app.Run()
 }

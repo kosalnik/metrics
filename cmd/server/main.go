@@ -7,7 +7,7 @@ import (
 
 func main() {
 	cfg := config.NewConfig()
-	parseFlags(cfg.Server)
+	parseFlags(&cfg.Server)
 	app := server.NewApp(cfg.Server)
 	err := app.Serve()
 	if err != nil {
