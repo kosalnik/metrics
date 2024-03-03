@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
 	"github.com/kosalnik/metrics/internal/storage"
 	"net/http"
@@ -9,16 +10,18 @@ import (
 
 type App struct {
 	Storage storage.Storage
+	config  config.ServerConfig
 }
 
-func NewApp() *App {
+func NewApp(cfg config.ServerConfig) *App {
 	return &App{
 		Storage: storage.NewStorage(),
+		config:  cfg,
 	}
 }
 
 func (app *App) Serve() error {
-	return http.ListenAndServe(`:8080`, app.GetRouter())
+	return http.ListenAndServe(app.config.Address, app.GetRouter())
 }
 
 func (app *App) GetRouter() chi.Router {

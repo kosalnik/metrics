@@ -14,12 +14,12 @@ import (
 type Client struct {
 	mu        sync.Mutex
 	client    *http.Client
-	config    *config.ClientConfig
+	config    *config.AgentConfig
 	gauge     map[string]float64
 	poolCount int64
 }
 
-func NewClient(config config.ClientConfig) *Client {
+func NewClient(config config.AgentConfig) *Client {
 	return &Client{
 		client: http.DefaultClient,
 		config: &config,

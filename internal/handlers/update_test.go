@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/server"
 	"github.com/kosalnik/metrics/internal/storage"
 	"github.com/stretchr/testify/assert"
@@ -80,7 +81,7 @@ func TestUpdateHandler_Handle(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			app := server.NewApp()
+			app := server.NewApp(config.ServerConfig{})
 			r := app.GetRouter()
 			srv := httptest.NewServer(r)
 			response, err := srv.Client().Post(srv.URL+tt.path, "text/plain", nil)

@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/server"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,7 +25,7 @@ func TestGetHandler(t *testing.T) {
 		{"invalid metric type", "/value/unk/u3", "Not Found\n", http.StatusNotFound},
 	}
 
-	app := server.NewApp()
+	app := server.NewApp(config.ServerConfig{})
 	s := app.Storage
 	r := app.GetRouter()
 	s.IncCounter("c1", 5)

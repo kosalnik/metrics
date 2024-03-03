@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/server"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,7 @@ import (
 )
 
 func TestGetAllHandler(t *testing.T) {
-	app := server.NewApp()
+	app := server.NewApp(config.ServerConfig{})
 	s := app.Storage
 	r := app.GetRouter()
 	s.IncCounter("c1", 5)
@@ -25,6 +26,6 @@ func TestGetAllHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	err = res.Body.Close()
 	require.NoError(t, err)
-	expected := "g1 = 13.1\nc1 = 5\n"
+	expected := "c1 = 5\ng1 = 13.1"
 	assert.Equal(t, expected, string(content))
 }
