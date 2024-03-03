@@ -1,7 +1,5 @@
 package config
 
-import "time"
-
 type Config struct {
 	Agent  AgentConfig
 	Server ServerConfig
@@ -11,9 +9,9 @@ type AgentConfig struct {
 	// Адрес сервера, куда клиент будет посылать метрики
 	CollectorAddress string
 	// Время между сборами метрик
-	PoolInterval time.Duration
+	PoolInterval int64
 	// Время между отправками метрик на сервер
-	ReportInterval time.Duration
+	ReportInterval int64
 }
 
 type ServerConfig struct {
@@ -24,9 +22,9 @@ type ServerConfig struct {
 func NewConfig() *Config {
 	return &Config{
 		Agent: AgentConfig{
-			CollectorAddress: "http://127.0.0.1:8080",
-			PoolInterval:     time.Duration(time.Second * 2),
-			ReportInterval:   time.Duration(time.Second * 10),
+			CollectorAddress: "127.0.0.1:8080",
+			PoolInterval:     2,
+			ReportInterval:   10,
 		},
 		Server: ServerConfig{
 			Address: ":8080",
