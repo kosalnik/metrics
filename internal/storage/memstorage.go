@@ -21,22 +21,14 @@ func NewStorage() *MemStorage {
 	}
 }
 
-func (m *MemStorage) HasGauge(name string) bool {
-	_, ok := m.gauge[name]
-	return ok
+func (m *MemStorage) GetGauge(name string) (v float64, ok bool) {
+	v, ok = m.gauge[name]
+	return
 }
 
-func (m *MemStorage) GetGauge(name string) float64 {
-	return m.gauge[name]
-}
-
-func (m *MemStorage) HasCounter(name string) bool {
-	_, ok := m.counter[name]
-	return ok
-}
-
-func (m *MemStorage) GetCounter(name string) int64 {
-	return m.counter[name]
+func (m *MemStorage) GetCounter(name string) (v int64, ok bool) {
+	v, ok = m.counter[name]
+	return
 }
 
 func (m *MemStorage) SetGauge(name string, value float64) {

@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/kosalnik/metrics/internal/storage"
 	"net/http"
 	"sort"
 	"strings"
+
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 type GetAllHandler struct {
@@ -22,7 +23,6 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 func (h *GetAllHandler) Handler() func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		items := h.storage.GetPlain()
-		fmt.Println(items)
 		var res = []string{}
 		for k, v := range items {
 			res = append(res, fmt.Sprintf("%s = %s", k, v))

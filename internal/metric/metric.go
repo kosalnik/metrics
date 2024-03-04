@@ -1,4 +1,4 @@
-package metricprovider
+package metric
 
 import "runtime"
 

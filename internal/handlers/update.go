@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/kosalnik/metrics/internal/storage"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
+
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 type UpdateHandler struct {

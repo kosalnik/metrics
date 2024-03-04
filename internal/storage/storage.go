@@ -1,11 +1,9 @@
 package storage
 
 type Storage interface {
-	HasGauge(name string) bool
-	GetGauge(name string) float64
+	GetGauge(name string) (float64, bool)
 	SetGauge(name string, value float64)
-	HasCounter(name string) bool
-	GetCounter(name string) int64
+	GetCounter(name string) (int64, bool)
 	IncCounter(name string, value int64)
 	GetPlain() map[string]string
 }

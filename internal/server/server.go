@@ -1,20 +1,22 @@
 package server
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
+
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
 	"github.com/kosalnik/metrics/internal/storage"
-	"log"
-	"net/http"
 )
 
 type App struct {
 	Storage storage.Storage
-	config  config.ServerConfig
+	config  config.Server
 }
 
-func NewApp(cfg config.ServerConfig) *App {
+func NewApp(cfg config.Server) *App {
 	return &App{
 		Storage: storage.NewStorage(),
 		config:  cfg,

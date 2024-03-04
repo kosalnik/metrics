@@ -1,9 +1,9 @@
 package storage
 
 import (
-	"github.com/stretchr/testify/assert"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMemStorage_GetCounter(t *testing.T) {
@@ -16,6 +16,7 @@ func TestMemStorage_GetCounter(t *testing.T) {
 		storageState storageState
 		metricName   string
 		want         int64
+		wantOk       bool
 	}{
 		{
 			name: "empty storage",
@@ -25,6 +26,7 @@ func TestMemStorage_GetCounter(t *testing.T) {
 			},
 			metricName: "testCounter",
 			want:       0,
+			wantOk:     false,
 		},
 		{
 			name: "no gauge, counter exists",
@@ -36,6 +38,7 @@ func TestMemStorage_GetCounter(t *testing.T) {
 			},
 			metricName: "testCounter",
 			want:       3,
+			wantOk:     true,
 		},
 		{
 			name: "gauge exists, no counter",
@@ -47,6 +50,7 @@ func TestMemStorage_GetCounter(t *testing.T) {
 			},
 			metricName: "testCounter",
 			want:       0,
+			wantOk:     false,
 		},
 	}
 	for _, tt := range tests {
@@ -55,9 +59,9 @@ func TestMemStorage_GetCounter(t *testing.T) {
 				gauge:   tt.storageState.gauge,
 				counter: tt.storageState.counter,
 			}
-			if got := m.GetCounter(tt.metricName); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetCounter() = %v, want %v", got, tt.want)
-			}
+			got, ok := m.GetCounter(tt.metricName)
+			assert.Equal(t, tt.wantOk, ok)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -72,6 +76,7 @@ func TestMemStorage_GetGauge(t *testing.T) {
 		storageState storageState
 		metricName   string
 		want         float64
+		wantOk       bool
 	}{
 		{
 			name: "empty storage",
@@ -81,6 +86,7 @@ func TestMemStorage_GetGauge(t *testing.T) {
 			},
 			metricName: "testCounter",
 			want:       0,
+			wantOk:     false,
 		},
 		{
 			name: "no gauge, counter exists",
@@ -92,6 +98,7 @@ func TestMemStorage_GetGauge(t *testing.T) {
 			},
 			metricName: "testCounter",
 			want:       0,
+			wantOk:     false,
 		},
 		{
 			name: "gauge exists, no counter",
@@ -103,6 +110,7 @@ func TestMemStorage_GetGauge(t *testing.T) {
 			},
 			metricName: "testCounter",
 			want:       3,
+			wantOk:     true,
 		},
 	}
 	for _, tt := range tests {
@@ -111,9 +119,9 @@ func TestMemStorage_GetGauge(t *testing.T) {
 				gauge:   tt.storageState.gauge,
 				counter: tt.storageState.counter,
 			}
-			if got := m.GetGauge(tt.metricName); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetGauge() = %v, want %v", got, tt.want)
-			}
+			got, ok := m.GetGauge(tt.metricName)
+			assert.Equal(t, tt.wantOk, ok)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -161,7 +169,8 @@ func TestMemStorage_IncCounter(t *testing.T) {
 				counter: tt.storageState.counter,
 			}
 			m.IncCounter(tt.metric.name, tt.metric.value)
-			actual := m.GetCounter(tt.metric.name)
+			actual, ok := m.GetCounter(tt.metric.name)
+			assert.True(t, ok)
 			assert.Equal(t, tt.want, actual)
 		})
 	}
@@ -171,8 +180,8 @@ func TestMemStorage_SetGauge(t *testing.T) {
 	m := NewStorage()
 	assert.NotNil(t, m)
 	m.SetGauge("test", 1)
-	v := m.GetGauge("test")
-	assert.NotNil(t, v)
+	v, ok := m.GetGauge("test")
+	assert.True(t, ok)
 	assert.Equal(t, 1.0, v)
 }
 

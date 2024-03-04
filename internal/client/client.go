@@ -2,24 +2,25 @@ package client
 
 import (
 	"fmt"
-	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/metricprovider"
 	"log"
 	"math/rand"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/kosalnik/metrics/internal/config"
+	"github.com/kosalnik/metrics/internal/metric"
 )
 
 type Client struct {
 	mu        sync.Mutex
 	client    *http.Client
-	config    *config.AgentConfig
+	config    *config.Agent
 	gauge     map[string]float64
 	poolCount int64
 }
 
-func NewClient(config config.AgentConfig) *Client {
+func NewClient(config config.Agent) *Client {
 	return &Client{
 		client: http.DefaultClient,
 		config: &config,
@@ -54,7 +55,7 @@ func (c *Client) pool() {
 	for {
 		c.mu.Lock()
 		log.Println("Pool")
-		c.gauge = metricprovider.GetMetrics()
+		c.gauge = metric.GetMetrics()
 		c.poolCount = c.poolCount + 1
 		log.Println(c.poolCount)
 		c.mu.Unlock()
@@ -64,20 +65,24 @@ func (c *Client) pool() {
 
 func (c *Client) sendGauge(k string, v float64) {
 	r, err := c.client.Post(fmt.Sprintf("http://%s/update/gauge/%s/%v", c.config.CollectorAddress, k, v), "text/plain", nil)
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			log.Printf("fail close body. %s", err.Error())
+		}
+	}()
 	if err != nil {
 		log.Printf("fail push. %s", err.Error())
-	}
-	if err := r.Body.Close(); err != nil {
-		log.Printf("fail close body. %s", err.Error())
 	}
 }
 
 func (c *Client) sendCounter(k string, v int64) {
 	r, err := c.client.Post(fmt.Sprintf("http://%s/update/counter/%s/%v", c.config.CollectorAddress, k, v), "text/plain", nil)
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			log.Printf("fail close body. %s", err.Error())
+		}
+	}()
 	if err != nil {
 		log.Printf("Fail push: %s", err.Error())
-	}
-	if err := r.Body.Close(); err != nil {
-		log.Printf("fail close body. %s", err.Error())
 	}
 }
