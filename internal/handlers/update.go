@@ -2,17 +2,24 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/storage"
 )
 
 type UpdateHandler struct {
 	Storage storage.Storage
+}
+
+func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
+	h := UpdateHandler{
+		Storage: s,
+	}
+	return h.Handle
 }
 
 func NewUpdateHandler(s storage.Storage) *UpdateHandler {
@@ -25,7 +32,7 @@ func (h *UpdateHandler) Handle(res http.ResponseWriter, req *http.Request) {
 	mType := chi.URLParam(req, "type")
 	mName := chi.URLParam(req, "name")
 	mVal := chi.URLParam(req, "value")
-	log.Println(mType, mName, mVal)
+	logrus.Debugf("Handle %s[%s]=%s", mType, mName, mVal)
 	switch mType {
 	case "gauge":
 		HandleUpdateGauge(h.Storage, mName, mVal)(res, req)
