@@ -1,11 +1,12 @@
 package logger
 
 import (
+	"github.com/kosalnik/metrics/internal/config"
 	"github.com/sirupsen/logrus"
 )
 
-func InitLogger() error {
-	level, err := logrus.ParseLevel("info")
+func InitLogger(cfg config.Logger) error {
+	level, err := logrus.ParseLevel(cfg.Level)
 	if err != nil {
 		return err
 	}

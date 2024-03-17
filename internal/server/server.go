@@ -33,11 +33,7 @@ func (app *App) GetRouter() chi.Router {
 	r.Route("/", func(r chi.Router) {
 		r.Get("/", handlers.NewGetAllHandler(app.Storage))
 		r.Route("/update", func(r chi.Router) {
-			r.Post("/", handlers.NewRestUpdateHandler(app.Storage))
-			r.Post("/{type}/{name}/{value}", func(writer http.ResponseWriter, request *http.Request) {
-				h := handlers.NewUpdateHandler(app.Storage)
-				h.Handle(writer, request)
-			})
+			r.Post("/{type}/{name}/{value}", handlers.NewUpdateHandler(app.Storage))
 		})
 		r.Get("/value/{type}/{name}", handlers.NewGetHandler(app.Storage))
 	})

@@ -57,7 +57,7 @@ func (c *Client) pool() {
 		logrus.Debug("Pool")
 		c.gauge = metric.GetMetrics()
 		c.poolCount = c.poolCount + 1
-		logrus.Debugf("PoolCount=%s", c.poolCount)
+		logrus.Debugf("PoolCount=%d", c.poolCount)
 		c.mu.Unlock()
 		time.Sleep(time.Duration(c.config.PoolInterval) * time.Second)
 	}
