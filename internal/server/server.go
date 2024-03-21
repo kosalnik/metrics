@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/config"
@@ -30,6 +31,10 @@ func (app *App) Serve() error {
 
 func (app *App) GetRouter() chi.Router {
 	r := chi.NewRouter()
+	r.Use(
+		middleware.Logger,
+		middleware.Recoverer,
+	)
 	r.Route("/", func(r chi.Router) {
 		r.Get("/", handlers.NewGetAllHandler(app.Storage))
 		r.Route("/update", func(r chi.Router) {
