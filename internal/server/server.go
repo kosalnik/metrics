@@ -1,10 +1,11 @@
 package server
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
@@ -24,17 +25,20 @@ func NewApp(cfg config.Server) *App {
 }
 
 func (app *App) Serve() error {
-	log.Println("Listen " + app.config.Address)
+	logrus.Info("Listen " + app.config.Address)
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
 }
 
 func (app *App) GetRouter() chi.Router {
 	r := chi.NewRouter()
+	r.Use(
+		middleware.Logger,
+		middleware.Recoverer,
+	)
 	r.Route("/", func(r chi.Router) {
 		r.Get("/", handlers.NewGetAllHandler(app.Storage))
-		r.Post("/update/{type}/{name}/{value}", func(writer http.ResponseWriter, request *http.Request) {
-			h := handlers.NewUpdateHandler(app.Storage)
-			h.Handle(writer, request)
+		r.Route("/update", func(r chi.Router) {
+			r.Post("/{type}/{name}/{value}", handlers.NewUpdateHandler(app.Storage))
 		})
 		r.Get("/value/{type}/{name}", handlers.NewGetHandler(app.Storage))
 	})

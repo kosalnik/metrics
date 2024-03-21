@@ -2,40 +2,32 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/storage"
 )
 
-type UpdateHandler struct {
-	Storage storage.Storage
-}
-
-func NewUpdateHandler(s storage.Storage) *UpdateHandler {
-	return &UpdateHandler{
-		Storage: s,
+func NewUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
+		mType := chi.URLParam(req, "type")
+		mName := chi.URLParam(req, "name")
+		mVal := chi.URLParam(req, "value")
+		logrus.Debugf("Handle %s[%s]=%s", mType, mName, mVal)
+		switch mType {
+		case "gauge":
+			HandleUpdateGauge(s, mName, mVal)(res, req)
+			return
+		case "counter":
+			HandleUpdateCounter(s, mName, mVal)(res, req)
+			return
+		}
+		msg := fmt.Sprintf("bad request. wrong type %v", mType)
+		http.Error(res, msg, http.StatusBadRequest)
 	}
-}
-
-func (h *UpdateHandler) Handle(res http.ResponseWriter, req *http.Request) {
-	mType := chi.URLParam(req, "type")
-	mName := chi.URLParam(req, "name")
-	mVal := chi.URLParam(req, "value")
-	log.Println(mType, mName, mVal)
-	switch mType {
-	case "gauge":
-		HandleUpdateGauge(h.Storage, mName, mVal)(res, req)
-		return
-	case "counter":
-		HandleUpdateCounter(h.Storage, mName, mVal)(res, req)
-		return
-	}
-	msg := fmt.Sprintf("bad request. wrong type %v", mType)
-	http.Error(res, msg, http.StatusBadRequest)
 }
 
 func HandleUpdateGauge(s storage.Storage, name, value string) func(http.ResponseWriter, *http.Request) {
