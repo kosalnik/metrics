@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/kosalnik/metrics/internal/application/server"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/server"
 	"github.com/kosalnik/metrics/internal/service/logger"
 )
 

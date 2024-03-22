@@ -35,15 +35,15 @@ func (app *App) GetRouter() chi.Router {
 		middleware.Logger,
 		middleware.Recoverer,
 	)
-	requireJsonMw := middleware.AllowContentType("application/json")
+	requireJSONMw := middleware.AllowContentType("application/json")
 	r.Route("/", func(r chi.Router) {
 		r.Get("/", handlers.NewGetAllHandler(app.Storage))
 		r.Route("/update", func(r chi.Router) {
-			r.With(requireJsonMw).Post("/", handlers.NewRestUpdateHandler(app.Storage))
+			r.With(requireJSONMw).Post("/", handlers.NewRestUpdateHandler(app.Storage))
 			r.Post("/{type}/{name}/{value}", handlers.NewUpdateHandler(app.Storage))
 		})
 		r.Route("/value", func(r chi.Router) {
-			r.With(requireJsonMw).Get("/", handlers.NewRestGetHandler(app.Storage))
+			r.With(requireJSONMw).Post("/", handlers.NewRestGetHandler(app.Storage))
 			r.Get("/{type}/{name}", handlers.NewGetHandler(app.Storage))
 		})
 	})
