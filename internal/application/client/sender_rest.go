@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/kosalnik/metrics/internal/config"
@@ -17,7 +18,7 @@ type SenderRest struct {
 }
 
 func NewSenderRest(config *config.Agent) Sender {
-	return &SenderSimple{
+	return &SenderRest{
 		client: http.DefaultClient,
 		config: config,
 	}
@@ -35,7 +36,9 @@ func (c *SenderRest) SendGauge(k string, v float64) {
 		return
 	}
 	body := bytes.NewReader(data)
-	r, err := c.client.Post(fmt.Sprintf("http://%s/update/", c.config.CollectorAddress), "application/json", body)
+	url := fmt.Sprintf("http://%s/update/", c.config.CollectorAddress)
+	r, err := c.client.Post(url, "application/json", body)
+	//logrus.WithFields(logrus.Fields{"url": url, "body": string(data)}).Info("send gauge.")
 	if err != nil {
 		logrus.WithFields(logrus.Fields{"key": k, "val": v}).WithError(err).Errorf("send gauge. fail post")
 		return
@@ -48,21 +51,29 @@ func (c *SenderRest) SendGauge(k string, v float64) {
 }
 
 func (c *SenderRest) SendCounter(k string, v int64) {
+	vv := float64(v)
 	m := models.Metrics{
 		ID:    k,
 		MType: "counter",
 		Delta: &v,
+		Value: &vv,
 	}
 	data, err := json.Marshal(m)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{"key": k, "val": v}).WithError(err).Errorf("send gauge. fail marshal")
+		logrus.WithFields(logrus.Fields{"key": k, "val": v}).WithError(err).Errorf("send counter. fail marshal")
 		return
 	}
 	body := bytes.NewReader(data)
-	r, err := c.client.Post(fmt.Sprintf("http://%s/update/", c.config.CollectorAddress), "application/json", body)
+	url := fmt.Sprintf("http://%s/update/", c.config.CollectorAddress)
+	r, err := c.client.Post(url, "application/json", body)
+	logrus.WithFields(logrus.Fields{"url": url, "body": string(data)}).Info("send counter")
 	if err != nil {
 		logrus.Errorf("Fail push: %s", err.Error())
 		return
+	}
+	response, err := io.ReadAll(r.Body)
+	if err == nil {
+		logrus.WithField("res", string(response)).Info("send counter result")
 	}
 	defer func() {
 		if err := r.Body.Close(); err != nil {

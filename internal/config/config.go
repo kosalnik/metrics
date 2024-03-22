@@ -10,7 +10,7 @@ type Agent struct {
 	// Адрес сервера, куда клиент будет посылать метрики
 	CollectorAddress string
 	// Время между сборами метрик
-	PoolInterval int64
+	PollInterval int64
 	// Время между отправками метрик на сервер
 	ReportInterval int64
 }
@@ -30,7 +30,7 @@ func NewConfig() *Config {
 		Agent: Agent{
 			Logger:           Logger{Level: "info"},
 			CollectorAddress: "127.0.0.1:8080",
-			PoolInterval:     2,
+			PollInterval:     2,
 			ReportInterval:   10,
 		},
 		Server: Server{

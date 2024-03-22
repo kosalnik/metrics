@@ -14,7 +14,7 @@ func TestNewConfig(t *testing.T) {
 			Agent: Agent{
 				Logger:           Logger{Level: "info"},
 				CollectorAddress: "127.0.0.1:8080",
-				PoolInterval:     2,
+				PollInterval:     2,
 				ReportInterval:   10,
 			},
 			Server: Server{

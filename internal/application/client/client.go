@@ -15,7 +15,7 @@ type Client struct {
 	sender    Sender
 	config    *config.Agent
 	gauge     map[string]float64
-	poolCount int64
+	pollCount int64
 }
 
 func NewClient(config config.Agent) *Client {
@@ -28,10 +28,10 @@ func NewClient(config config.Agent) *Client {
 }
 
 func (c *Client) Run() {
-	logrus.Infof("Pool interval: %d", c.config.PoolInterval)
+	logrus.Infof("Poll interval: %d", c.config.PollInterval)
 	logrus.Infof("Report interval: %d", c.config.ReportInterval)
 	logrus.Infof("Collector address: %s", c.config.CollectorAddress)
-	go c.pool()
+	go c.poll()
 	c.push()
 }
 
@@ -44,21 +44,21 @@ func (c *Client) push() {
 			for k, v := range c.gauge {
 				c.sender.SendGauge(k, v)
 			}
-			c.sender.SendCounter("PoolCount", c.poolCount)
-			c.sender.SendGauge("RandomValue", rand.Float64())
 		}
+		c.sender.SendCounter("PollCount", c.pollCount)
+		c.sender.SendGauge("RandomValue", rand.Float64())
 		c.mu.Unlock()
 	}
 }
 
-func (c *Client) pool() {
+func (c *Client) poll() {
 	for {
 		c.mu.Lock()
-		logrus.Debug("Pool")
+		logrus.Debug("Poll")
 		c.gauge = metric.GetMetrics()
-		c.poolCount = c.poolCount + 1
-		logrus.Debugf("PoolCount=%d", c.poolCount)
+		c.pollCount = c.pollCount + 1
+		logrus.Debugf("PollCount=%d", c.pollCount)
 		c.mu.Unlock()
-		time.Sleep(time.Duration(c.config.PoolInterval) * time.Second)
+		time.Sleep(time.Duration(c.config.PollInterval) * time.Second)
 	}
 }

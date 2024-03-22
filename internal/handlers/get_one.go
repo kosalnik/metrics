@@ -17,7 +17,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		data, err := io.ReadAll(req.Body)
-		logrus.Debugf("Handle %s", data)
+		logrus.WithField("body", string(data)).Info("Handle Get")
 		if err != nil {
 			http.Error(w, `"Wrong data"`, http.StatusBadRequest)
 			return
@@ -38,6 +38,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 			if out, err := json.Marshal(m); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)
 			} else {
+				logrus.WithField("body", string(out)).Info("Handle Get Result")
 				_, _ = w.Write(out)
 			}
 			return

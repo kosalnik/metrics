@@ -3,6 +3,8 @@ package storage
 import (
 	"fmt"
 	"sync"
+
+	"github.com/sirupsen/logrus"
 )
 
 type MemStorage struct {
@@ -47,6 +49,7 @@ func (m *MemStorage) SetGauge(name string, value float64) float64 {
 func (m *MemStorage) IncCounter(name string, value int64) int64 {
 	m.mu.Lock()
 	v := m.counter[name] + value
+	logrus.WithFields(logrus.Fields{"k": name, "old": m.counter[name], "new": v}).Info("IncCounter")
 	m.counter[name] = v
 	m.mu.Unlock()
 	return v
