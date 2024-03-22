@@ -9,6 +9,12 @@ import (
 	"github.com/kosalnik/metrics/internal/storage"
 )
 
+func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+
+	}
+}
+
 func NewGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		mType := chi.URLParam(req, "type")

@@ -73,13 +73,6 @@ func TestUpdateHandler_Handle(t *testing.T) {
 			path:    "/update/zzz",
 			want:    want{statusCode: http.StatusNotFound},
 		},
-		{
-			name:    "Type not specified",
-			storage: storage.NewStorage(),
-			method:  http.MethodPost,
-			path:    "/update",
-			want:    want{statusCode: http.StatusNotFound},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
