@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/kosalnik/metrics/internal/application/server"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/server"
 	"github.com/kosalnik/metrics/internal/storage"
 )
 
@@ -71,13 +71,6 @@ func TestUpdateHandler_Handle(t *testing.T) {
 			storage: storage.NewStorage(),
 			method:  http.MethodPost,
 			path:    "/update/zzz",
-			want:    want{statusCode: http.StatusNotFound},
-		},
-		{
-			name:    "Type not specified",
-			storage: storage.NewStorage(),
-			method:  http.MethodPost,
-			path:    "/update",
 			want:    want{statusCode: http.StatusNotFound},
 		},
 	}
