@@ -18,7 +18,10 @@ type Agent struct {
 type Server struct {
 	Logger Logger
 	// ip:host, которые слушает сервер
-	Address string
+	Address         string
+	StoreInterval   int
+	FileStoragePath string
+	Restore         bool
 }
 
 type Logger struct {

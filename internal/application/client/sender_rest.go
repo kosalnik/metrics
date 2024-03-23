@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/kosalnik/metrics/internal/config"
@@ -85,10 +84,6 @@ func (c *SenderRest) SendCounter(k string, v int64) {
 	if err != nil {
 		logrus.Errorf("Fail push: %s", err.Error())
 		return
-	}
-	response, err := io.ReadAll(r.Body)
-	if err == nil {
-		logrus.WithField("res", string(response)).Info("send counter result")
 	}
 	defer func() {
 		if err := r.Body.Close(); err != nil {

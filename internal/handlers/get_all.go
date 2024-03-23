@@ -12,7 +12,7 @@ import (
 func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		accept := req.Header.Get("Accept")
-		isJSON := strings.Contains(accept, "application/json")
+		isJSON := accept != "" && strings.Contains(accept, "application/json")
 		if isJSON {
 			w.Header().Set("Content-Type", "application/json")
 		} else {
@@ -30,9 +30,9 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 			var t []string
 			for _, v := range items {
 				if v.MType == "counter" {
-					t = append(t, fmt.Sprintf("%s = %d", v.ID, *v.Delta))
+					t = append(t, fmt.Sprintf("%s = %v", v.ID, *v.Delta))
 				} else {
-					t = append(t, fmt.Sprintf("%s = %f", v.ID, *v.Value))
+					t = append(t, fmt.Sprintf("%s = %v", v.ID, *v.Value))
 				}
 			}
 			data = []byte(strings.Join(t, "\n"))
