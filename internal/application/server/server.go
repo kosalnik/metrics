@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -32,12 +33,13 @@ func (app *App) Serve() error {
 func (app *App) GetRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Use(
+		gzipMiddleware,
 		middleware.Logger,
 		middleware.Recoverer,
 	)
 	requireJSONMw := middleware.AllowContentType("application/json")
 	r.Route("/", func(r chi.Router) {
-		r.Get("/", handlers.NewGetAllHandler(app.Storage))
+		r.With(requireJSONMw).Get("/", handlers.NewGetAllHandler(app.Storage))
 		r.Route("/update", func(r chi.Router) {
 			r.With(requireJSONMw).Post("/", handlers.NewRestUpdateHandler(app.Storage))
 			r.Post("/{type}/{name}/{value}", handlers.NewUpdateHandler(app.Storage))
@@ -48,4 +50,33 @@ func (app *App) GetRouter() chi.Router {
 		})
 	})
 	return r
+}
+
+func gzipMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ow := w
+
+		acceptEncoding := r.Header.Get("Accept-Encoding")
+		supportsGzip := strings.Contains(acceptEncoding, "gzip")
+		if supportsGzip {
+			cw := newCompressWriter(w)
+			ow = cw
+			defer cw.Close()
+		}
+
+		contentEncoding := r.Header.Get("Content-Encoding")
+		sendsGzip := strings.Contains(contentEncoding, "gzip")
+		if sendsGzip {
+			// оборачиваем тело запроса в io.Reader с поддержкой декомпрессии
+			cr, err := newCompressReader(r.Body)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			r.Body = cr
+			defer cr.Close()
+		}
+
+		next.ServeHTTP(ow, r)
+	})
 }

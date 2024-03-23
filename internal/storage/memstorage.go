@@ -1,9 +1,9 @@
 package storage
 
 import (
-	"fmt"
 	"sync"
 
+	"github.com/kosalnik/metrics/internal/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -55,14 +55,19 @@ func (m *MemStorage) IncCounter(name string, value int64) int64 {
 	return v
 }
 
-func (m *MemStorage) GetPlain() map[string]string {
+func (m *MemStorage) GetAll() []models.Metrics {
 	m.mu.Lock()
-	res := make(map[string]string, len(m.gauge)+len(m.counter))
+	res := make([]models.Metrics, len(m.gauge)+len(m.counter))
+	i := 0
 	for k, v := range m.gauge {
-		res[k] = fmt.Sprintf("%v", v)
+		t := v
+		res[i] = models.Metrics{ID: k, MType: "gauge", Value: &t}
+		i++
 	}
 	for k, v := range m.counter {
-		res[k] = fmt.Sprintf("%v", v)
+		t := v
+		res[i] = models.Metrics{ID: k, MType: "counter", Delta: &t}
+		i++
 	}
 	m.mu.Unlock()
 	return res

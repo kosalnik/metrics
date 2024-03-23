@@ -18,8 +18,9 @@ type SenderRest struct {
 }
 
 func NewSenderRest(config *config.Agent) Sender {
+	c := http.Client{}
 	return &SenderRest{
-		client: http.DefaultClient,
+		client: &c,
 		config: config,
 	}
 }
@@ -37,7 +38,14 @@ func (c *SenderRest) SendGauge(k string, v float64) {
 	}
 	body := bytes.NewReader(data)
 	url := fmt.Sprintf("http://%s/update/", c.config.CollectorAddress)
-	r, err := c.client.Post(url, "application/json", body)
+	req, err := http.NewRequest(http.MethodPost, url, body)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"key": k, "val": v}).WithError(err).Errorf("send gauge. fail make request")
+		return
+	}
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
+	req.Header.Set("Content-Type", "application/json")
+	r, err := c.client.Do(req)
 	//logrus.WithFields(logrus.Fields{"url": url, "body": string(data)}).Info("send gauge.")
 	if err != nil {
 		logrus.WithFields(logrus.Fields{"key": k, "val": v}).WithError(err).Errorf("send gauge. fail post")
@@ -65,7 +73,14 @@ func (c *SenderRest) SendCounter(k string, v int64) {
 	}
 	body := bytes.NewReader(data)
 	url := fmt.Sprintf("http://%s/update/", c.config.CollectorAddress)
-	r, err := c.client.Post(url, "application/json", body)
+	req, err := http.NewRequest(http.MethodPost, url, body)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"key": k, "val": v}).WithError(err).Errorf("send gauge. fail make request")
+		return
+	}
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
+	req.Header.Set("Content-Type", "application/json")
+	r, err := c.client.Do(req)
 	logrus.WithFields(logrus.Fields{"url": url, "body": string(data)}).Info("send counter")
 	if err != nil {
 		logrus.Errorf("Fail push: %s", err.Error())

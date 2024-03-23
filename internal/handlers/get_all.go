@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
-	"sort"
 	"strings"
 
 	"github.com/kosalnik/metrics/internal/storage"
@@ -11,14 +10,18 @@ import (
 
 func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		items := s.GetPlain()
-		var res []string
-		for k, v := range items {
-			res = append(res, fmt.Sprintf("%s = %s", k, v))
+		accept := req.Header.Get("Accept")
+		isJSON := strings.Contains(accept, "application/json")
+		if isJSON {
+			w.Header().Set("Content-Type", "application/json")
+		} else {
+			w.Header().Set("Content-Type", "text/html")
 		}
-		sort.Strings(res)
-		if _, err := fmt.Fprint(w, strings.Join(res, "\n")); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		items := s.GetAll()
+		data, err := json.Marshal(items)
+		if err != nil {
+			http.Error(w, `"fail marshal"`, http.StatusInternalServerError)
 		}
+		w.Write(data)
 	}
 }
