@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/kosalnik/metrics/internal/infra/storage"
@@ -35,6 +36,7 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 					t = append(t, fmt.Sprintf("%s = %v", v.ID, *v.Value))
 				}
 			}
+			sort.Strings(t)
 			data = []byte(strings.Join(t, "\n"))
 		}
 		w.Write(data)

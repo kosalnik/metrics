@@ -54,7 +54,8 @@ func (app *App) initBackup() error {
 func (app *App) GetRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Use(
-		gzipMiddleware,
+		middleware.Compress(1, "application/json", "text/html"),
+		//gzipMiddleware,
 		middleware.Logger,
 		middleware.Recoverer,
 	)
