@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/kosalnik/metrics/internal/application/server"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/server"
-	"github.com/kosalnik/metrics/internal/storage"
+	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
 func TestUpdateHandler_Handle(t *testing.T) {
@@ -26,58 +26,51 @@ func TestUpdateHandler_Handle(t *testing.T) {
 	}{
 		{
 			name:    "Send counter",
-			storage: storage.NewStorage(),
+			storage: storage.NewStorage(nil, nil),
 			method:  http.MethodPost,
 			path:    "/update/counter/asdf/3",
 			want:    want{statusCode: http.StatusOK},
 		},
 		{
 			name:    "Send gauge",
-			storage: storage.NewStorage(),
+			storage: storage.NewStorage(nil, nil),
 			method:  http.MethodPost,
 			path:    "/update/gauge/asdf/3.0",
 			want:    want{statusCode: http.StatusOK},
 		},
 		{
 			name:    "Wrong counter value",
-			storage: storage.NewStorage(),
+			storage: storage.NewStorage(nil, nil),
 			method:  http.MethodPost,
 			path:    "/update/counter/asdf/3.3",
 			want:    want{statusCode: http.StatusBadRequest},
 		},
 		{
 			name:    "Wrong gauge value",
-			storage: storage.NewStorage(),
+			storage: storage.NewStorage(nil, nil),
 			method:  http.MethodPost,
 			path:    "/update/gauge/asdf/zxc",
 			want:    want{statusCode: http.StatusBadRequest},
 		},
 		{
 			name:    "Wrong type",
-			storage: storage.NewStorage(),
+			storage: storage.NewStorage(nil, nil),
 			method:  http.MethodPost,
 			path:    "/update/zzz/val/1",
 			want:    want{statusCode: http.StatusBadRequest},
 		},
 		{
 			name:    "No value",
-			storage: storage.NewStorage(),
+			storage: storage.NewStorage(nil, nil),
 			method:  http.MethodPost,
 			path:    "/update/zzz/val",
 			want:    want{statusCode: http.StatusNotFound},
 		},
 		{
 			name:    "No metric name",
-			storage: storage.NewStorage(),
+			storage: storage.NewStorage(nil, nil),
 			method:  http.MethodPost,
 			path:    "/update/zzz",
-			want:    want{statusCode: http.StatusNotFound},
-		},
-		{
-			name:    "Type not specified",
-			storage: storage.NewStorage(),
-			method:  http.MethodPost,
-			path:    "/update",
 			want:    want{statusCode: http.StatusNotFound},
 		},
 	}
