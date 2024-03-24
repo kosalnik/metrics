@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/metric"
+	"github.com/kosalnik/metrics/internal/infra/metric"
 	"github.com/sirupsen/logrus"
 )
 

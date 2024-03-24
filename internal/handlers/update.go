@@ -11,7 +11,7 @@ import (
 	"github.com/kosalnik/metrics/internal/models"
 	"github.com/sirupsen/logrus"
 
-	"github.com/kosalnik/metrics/internal/storage"
+	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
 func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {

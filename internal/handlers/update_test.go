@@ -10,7 +10,7 @@ import (
 
 	"github.com/kosalnik/metrics/internal/application/server"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/storage"
+	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
 func TestUpdateHandler_Handle(t *testing.T) {

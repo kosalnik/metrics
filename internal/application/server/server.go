@@ -1,8 +1,11 @@
 package server
 
 import (
+	"errors"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -10,7 +13,7 @@ import (
 
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
-	"github.com/kosalnik/metrics/internal/storage"
+	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
 type App struct {
@@ -19,15 +22,33 @@ type App struct {
 }
 
 func NewApp(cfg config.Server) *App {
+	storeInterval := time.Second * time.Duration(cfg.StoreInterval)
 	return &App{
-		Storage: storage.NewStorage(),
+		Storage: storage.NewStorage(&storeInterval, &cfg.FileStoragePath),
 		config:  cfg,
 	}
 }
 
-func (app *App) Serve() error {
+func (app *App) Run() error {
+	if err := app.initBackup(); err != nil {
+		return err
+	}
 	logrus.Info("Listen " + app.config.Address)
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
+}
+
+func (app *App) initBackup() error {
+	if app.config.FileStoragePath == "" {
+		return nil
+	}
+	if app.config.Restore {
+		if err := app.Storage.Recover(app.config.FileStoragePath); err != nil {
+			if errors.Is(os.ErrNotExist, err) {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (app *App) GetRouter() chi.Router {

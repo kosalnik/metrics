@@ -13,7 +13,7 @@ func main() {
 	if err := logger.InitLogger(cfg.Server.Logger); err != nil {
 		panic(err.Error())
 	}
-	err := app.Serve()
+	err := app.Run()
 	if err != nil {
 		panic(err)
 	}

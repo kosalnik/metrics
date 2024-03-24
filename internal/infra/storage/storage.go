@@ -8,4 +8,6 @@ type Storage interface {
 	GetCounter(name string) (int64, bool)
 	IncCounter(name string, value int64) int64
 	GetAll() []models.Metrics
+	Store(path string) error
+	Recover(path string) error
 }

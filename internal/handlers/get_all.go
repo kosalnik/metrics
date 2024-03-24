@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/kosalnik/metrics/internal/storage"
+	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
 func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
