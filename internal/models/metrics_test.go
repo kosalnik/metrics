@@ -11,7 +11,7 @@ func TestMetrics_String(t *testing.T) {
 	}
 	var tenInt int64 = 10
 	var tenFloat float64 = 10
-	var pi float64 = 3.1415
+	var pi = 3.1415
 
 	tests := map[string]struct {
 		fields fields
