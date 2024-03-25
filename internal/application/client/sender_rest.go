@@ -27,7 +27,7 @@ func NewSenderRest(config *config.Agent) Sender {
 func (c *SenderRest) SendGauge(k string, v float64) {
 	m := models.Metrics{
 		ID:    k,
-		MType: "gauge",
+		MType: models.MGauge,
 		Value: &v,
 	}
 	data, err := json.Marshal(m)
@@ -61,7 +61,7 @@ func (c *SenderRest) SendCounter(k string, v int64) {
 	vv := float64(v)
 	m := models.Metrics{
 		ID:    k,
-		MType: "counter",
+		MType: models.MCounter,
 		Delta: &v,
 		Value: &vv,
 	}

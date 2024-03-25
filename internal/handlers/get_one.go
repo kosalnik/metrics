@@ -28,7 +28,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 			return
 		}
 		switch m.MType {
-		case "gauge":
+		case models.MGauge:
 			v, ok := s.GetGauge(m.ID)
 			if !ok {
 				http.NotFound(w, req)
@@ -42,7 +42,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 				_, _ = w.Write(out)
 			}
 			return
-		case "counter":
+		case models.MCounter:
 			v, ok := s.GetCounter(m.ID)
 			if !ok {
 				http.NotFound(w, req)
@@ -62,10 +62,10 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 
 func NewGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		mType := chi.URLParam(req, "type")
+		mType := models.MType(chi.URLParam(req, "type"))
 		mName := chi.URLParam(req, "name")
 		switch mType {
-		case "gauge":
+		case models.MGauge:
 			v, ok := s.GetGauge(mName)
 			if !ok {
 				http.NotFound(w, req)
@@ -76,7 +76,7 @@ func NewGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Re
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			return
-		case "counter":
+		case models.MCounter:
 			v, ok := s.GetCounter(mName)
 			if !ok {
 				http.NotFound(w, req)

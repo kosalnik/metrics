@@ -29,7 +29,7 @@ func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *
 			return
 		}
 		switch m.MType {
-		case "gauge":
+		case models.MGauge:
 			r := s.SetGauge(m.ID, *m.Value)
 			m.Value = &r
 			if out, err := json.Marshal(m); err != nil {
@@ -38,7 +38,7 @@ func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *
 				_, _ = res.Write(out)
 			}
 			return
-		case "counter":
+		case models.MCounter:
 			r := s.IncCounter(m.ID, *m.Delta)
 			m.Delta = &r
 			if out, err := json.Marshal(m); err != nil {
@@ -55,28 +55,35 @@ func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *
 func NewUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
 	return func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "text/plain")
-		mType := chi.URLParam(req, "type")
+		mType := models.MType(chi.URLParam(req, "type"))
 		mName := chi.URLParam(req, "name")
 		mVal := chi.URLParam(req, "value")
 		logrus.Debugf("Handle %s[%s]=%s", mType, mName, mVal)
 		switch mType {
-		case "gauge":
+		case models.MGauge:
 			v, err := strconv.ParseFloat(mVal, 64)
 			if err != nil {
 				http.Error(res, "bad request", http.StatusBadRequest)
+
 				return
 			}
 			r := s.SetGauge(mName, v)
-			res.Write([]byte(fmt.Sprintf("%f", r)))
+			if _, err := res.Write([]byte(fmt.Sprintf("%f", r))); err != nil {
+				logrus.WithError(err).Error("fail write response")
+			}
+
 			return
-		case "counter":
+		case models.MCounter:
 			v, err := strconv.ParseInt(mVal, 10, 64)
 			if err != nil {
 				http.Error(res, "bad request", http.StatusBadRequest)
 				return
 			}
 			r := s.IncCounter(mName, v)
-			res.Write([]byte(fmt.Sprintf("%d", r)))
+			if _, err := res.Write([]byte(fmt.Sprintf("%d", r))); err != nil {
+				logrus.WithError(err).Error("fail write response")
+			}
+
 			return
 		}
 		http.Error(res, "bad request", http.StatusBadRequest)

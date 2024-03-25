@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sort"
 	"strings"
 
 	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/sirupsen/logrus"
 )
 
 func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
@@ -30,15 +30,13 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 		} else {
 			var t []string
 			for _, v := range items {
-				if v.MType == "counter" {
-					t = append(t, fmt.Sprintf("%s = %v", v.ID, *v.Delta))
-				} else {
-					t = append(t, fmt.Sprintf("%s = %v", v.ID, *v.Value))
-				}
+				t = append(t, v.String())
 			}
 			sort.Strings(t)
 			data = []byte(strings.Join(t, "\n"))
 		}
-		w.Write(data)
+		if _, err := w.Write(data); err != nil {
+			logrus.WithError(err).Error("fail write response")
+		}
 	}
 }

@@ -85,12 +85,12 @@ func (m *MemStorage) GetAll() []models.Metrics {
 	i := 0
 	for k, v := range m.gauge {
 		t := v
-		res[i] = models.Metrics{ID: k, MType: "gauge", Value: &t}
+		res[i] = models.Metrics{ID: k, MType: models.MGauge, Value: &t}
 		i++
 	}
 	for k, v := range m.counter {
 		t := v
-		res[i] = models.Metrics{ID: k, MType: "counter", Delta: &t}
+		res[i] = models.Metrics{ID: k, MType: models.MCounter, Delta: &t}
 		i++
 	}
 	m.mu.Unlock()
