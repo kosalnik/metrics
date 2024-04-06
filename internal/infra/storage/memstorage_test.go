@@ -177,7 +177,7 @@ func TestMemStorage_IncCounter(t *testing.T) {
 }
 
 func TestMemStorage_SetGauge(t *testing.T) {
-	m := NewStorage()
+	m := NewStorage(nil, nil)
 	assert.NotNil(t, m)
 	m.SetGauge("test", 1)
 	v, ok := m.GetGauge("test")
@@ -186,6 +186,6 @@ func TestMemStorage_SetGauge(t *testing.T) {
 }
 
 func TestNewStorage(t *testing.T) {
-	m := NewStorage()
+	m := NewStorage(nil, nil)
 	assert.NotNil(t, m)
 }

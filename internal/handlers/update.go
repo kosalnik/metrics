@@ -1,61 +1,91 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/sirupsen/logrus"
 
-	"github.com/kosalnik/metrics/internal/storage"
+	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/models"
 )
 
-type UpdateHandler struct {
-	Storage storage.Storage
-}
-
-func NewUpdateHandler(s storage.Storage) *UpdateHandler {
-	return &UpdateHandler{
-		Storage: s,
-	}
-}
-
-func (h *UpdateHandler) Handle(res http.ResponseWriter, req *http.Request) {
-	mType := chi.URLParam(req, "type")
-	mName := chi.URLParam(req, "name")
-	mVal := chi.URLParam(req, "value")
-	log.Println(mType, mName, mVal)
-	switch mType {
-	case "gauge":
-		HandleUpdateGauge(h.Storage, mName, mVal)(res, req)
-		return
-	case "counter":
-		HandleUpdateCounter(h.Storage, mName, mVal)(res, req)
-		return
-	}
-	msg := fmt.Sprintf("bad request. wrong type %v", mType)
-	http.Error(res, msg, http.StatusBadRequest)
-}
-
-func HandleUpdateGauge(s storage.Storage, name, value string) func(http.ResponseWriter, *http.Request) {
+func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
 	return func(res http.ResponseWriter, req *http.Request) {
-		if v, err := strconv.ParseFloat(value, 64); err != nil {
-			http.Error(res, fmt.Sprintf("bad request. expected int64 [%s]", value), http.StatusBadRequest)
+		res.Header().Set("Content-Type", "application/json")
+		data, err := io.ReadAll(req.Body)
+		logrus.Debugf("Handle %s", data)
+		if err != nil {
+			http.Error(res, `"Wrong data"`, http.StatusBadRequest)
 			return
-		} else {
-			s.SetGauge(name, v)
 		}
+		var m models.Metrics
+		if err := json.Unmarshal(data, &m); err != nil {
+			http.Error(res, `"Wrong json"`, http.StatusBadRequest)
+			return
+		}
+		switch m.MType {
+		case models.MGauge:
+			r := s.SetGauge(m.ID, *m.Value)
+			m.Value = &r
+			if out, err := json.Marshal(m); err != nil {
+				http.Error(res, `"internal error"`, http.StatusInternalServerError)
+			} else {
+				_, _ = res.Write(out)
+			}
+			return
+		case models.MCounter:
+			r := s.IncCounter(m.ID, *m.Delta)
+			m.Delta = &r
+			if out, err := json.Marshal(m); err != nil {
+				http.Error(res, `"internal error"`, http.StatusInternalServerError)
+			} else {
+				_, _ = res.Write(out)
+			}
+			return
+		}
+		http.Error(res, `"not found"`, http.StatusNotFound)
 	}
 }
 
-func HandleUpdateCounter(s storage.Storage, name, value string) func(http.ResponseWriter, *http.Request) {
+func NewUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
 	return func(res http.ResponseWriter, req *http.Request) {
-		if v, err := strconv.ParseInt(value, 10, 64); err != nil {
-			http.Error(res, fmt.Sprintf("bad request. expected float64 [%s]", value), http.StatusBadRequest)
+		res.Header().Set("Content-Type", "text/plain")
+		mType := models.MType(chi.URLParam(req, "type"))
+		mName := chi.URLParam(req, "name")
+		mVal := chi.URLParam(req, "value")
+		logrus.Debugf("Handle %s[%s]=%s", mType, mName, mVal)
+		switch mType {
+		case models.MGauge:
+			v, err := strconv.ParseFloat(mVal, 64)
+			if err != nil {
+				http.Error(res, "bad request", http.StatusBadRequest)
+
+				return
+			}
+			r := s.SetGauge(mName, v)
+			if _, err := res.Write([]byte(fmt.Sprintf("%f", r))); err != nil {
+				logrus.WithError(err).Error("fail write response")
+			}
+
 			return
-		} else {
-			s.IncCounter(name, v)
+		case models.MCounter:
+			v, err := strconv.ParseInt(mVal, 10, 64)
+			if err != nil {
+				http.Error(res, "bad request", http.StatusBadRequest)
+				return
+			}
+			r := s.IncCounter(mName, v)
+			if _, err := res.Write([]byte(fmt.Sprintf("%d", r))); err != nil {
+				logrus.WithError(err).Error("fail write response")
+			}
+
+			return
 		}
+		http.Error(res, "bad request", http.StatusBadRequest)
 	}
 }
