@@ -13,7 +13,7 @@ func parseFlags(c *config.Server) {
 	flag.IntVar(&c.StoreInterval, "i", 300, "Store interval")
 	flag.StringVar(&c.FileStoragePath, "f", "/tmp/metrics-db.json", "File storage path")
 	flag.BoolVar(&c.Restore, "r", true, "Restore storage before start")
-	flag.StringVar(&c.Db.DSN, "d", "", "Database DSN")
+	flag.StringVar(&c.DB.DSN, "d", "", "Database DSN")
 	flag.Parse()
 	var err error
 	if v := os.Getenv("ADDRESS"); v != "" {
@@ -35,6 +35,6 @@ func parseFlags(c *config.Server) {
 		}
 	}
 	if v := os.Getenv("DATABASE_DSN"); v != "" {
-		c.Db.DSN = v
+		c.DB.DSN = v
 	}
 }

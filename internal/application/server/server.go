@@ -36,7 +36,7 @@ func (app *App) Run() error {
 		return err
 	}
 
-	if err := app.initDB(app.config.Db); err != nil {
+	if err := app.initDB(app.config.DB); err != nil {
 		return err
 	}
 	defer func() {
@@ -50,7 +50,7 @@ func (app *App) Run() error {
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
 }
 
-func (app *App) initDB(cfg config.Db) error {
+func (app *App) initDB(cfg config.DB) error {
 	db, err := sql.Open("pgx", cfg.DSN)
 	if err != nil {
 		return err

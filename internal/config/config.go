@@ -22,10 +22,10 @@ type Server struct {
 	StoreInterval   int
 	FileStoragePath string
 	Restore         bool
-	Db              Db
+	DB              DB
 }
 
-type Db struct {
+type DB struct {
 	DSN string
 }
 
