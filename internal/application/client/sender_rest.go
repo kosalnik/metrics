@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/models"
-	"github.com/sirupsen/logrus"
 )
 
 type SenderRest struct {

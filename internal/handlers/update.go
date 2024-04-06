@@ -8,10 +8,10 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/kosalnik/metrics/internal/models"
 	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/models"
 )
 
 func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {

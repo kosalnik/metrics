@@ -6,8 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kosalnik/metrics/internal/models"
 	"github.com/sirupsen/logrus"
+
+	"github.com/kosalnik/metrics/internal/models"
 )
 
 type MemStorage struct {
@@ -36,32 +37,32 @@ func NewStorage(backupInterval *time.Duration, backupPath *string) *MemStorage {
 
 func (m *MemStorage) GetGauge(name string) (v float64, ok bool) {
 	m.mu.Lock()
+	defer m.mu.Unlock()
 	v, ok = m.gauge[name]
-	m.mu.Unlock()
 	return
 }
 
 func (m *MemStorage) GetCounter(name string) (v int64, ok bool) {
 	m.mu.Lock()
+	defer m.mu.Unlock()
 	v, ok = m.counter[name]
-	m.mu.Unlock()
 	return
 }
 
 func (m *MemStorage) SetGauge(name string, value float64) float64 {
 	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.gauge[name] = value
-	m.mu.Unlock()
 	m.checkBackup()
 	return value
 }
 
 func (m *MemStorage) IncCounter(name string, value int64) int64 {
 	m.mu.Lock()
+	defer m.mu.Unlock()
 	v := m.counter[name] + value
 	logrus.WithFields(logrus.Fields{"k": name, "old": m.counter[name], "new": v}).Info("IncCounter")
 	m.counter[name] = v
-	m.mu.Unlock()
 	m.checkBackup()
 	return v
 }
@@ -81,6 +82,7 @@ func (m *MemStorage) checkBackup() {
 
 func (m *MemStorage) GetAll() []models.Metrics {
 	m.mu.Lock()
+	defer m.mu.Unlock()
 	res := make([]models.Metrics, len(m.gauge)+len(m.counter))
 	i := 0
 	for k, v := range m.gauge {
@@ -93,7 +95,6 @@ func (m *MemStorage) GetAll() []models.Metrics {
 		res[i] = models.Metrics{ID: k, MType: models.MCounter, Delta: &t}
 		i++
 	}
-	m.mu.Unlock()
 	return res
 }
 

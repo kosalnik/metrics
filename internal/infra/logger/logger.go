@@ -1,8 +1,9 @@
 package logger
 
 import (
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/sirupsen/logrus"
+
+	"github.com/kosalnik/metrics/internal/config"
 )
 
 func InitLogger(cfg config.Logger) error {
@@ -11,5 +12,6 @@ func InitLogger(cfg config.Logger) error {
 		return err
 	}
 	logrus.SetLevel(level)
+
 	return nil
 }

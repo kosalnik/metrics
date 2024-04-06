@@ -6,8 +6,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kosalnik/metrics/internal/infra/storage"
 	"github.com/sirupsen/logrus"
+
+	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
 func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {

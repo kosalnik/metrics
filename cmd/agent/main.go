@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/kosalnik/metrics/internal/application/client"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/service/logger"
+	"github.com/kosalnik/metrics/internal/infra/logger"
 )
 
 func main() {

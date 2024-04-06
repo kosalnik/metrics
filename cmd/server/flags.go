@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/sirupsen/logrus"
 )
 
 func parseFlags(c *config.Server) {
@@ -22,7 +21,7 @@ func parseFlags(c *config.Server) {
 	if v := os.Getenv("STORE_INTERVAL"); v != "" {
 		c.StoreInterval, err = strconv.Atoi(v)
 		if err != nil {
-			logrus.WithError(err).Fatal("wrong env STORE_INTERVAL")
+			panic("wrong env STORE_INTERVAL")
 		}
 	}
 	if v := os.Getenv("FILE_STORAGE_PATH"); v != "" {
@@ -31,7 +30,7 @@ func parseFlags(c *config.Server) {
 	if v := os.Getenv("RESTORE"); v != "" {
 		c.Restore, err = strconv.ParseBool(v)
 		if err != nil {
-			logrus.WithError(err).Fatal("wrong env RESTORE")
+			panic("wrong env RESTORE")
 		}
 	}
 }

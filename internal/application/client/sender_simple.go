@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/sirupsen/logrus"
+
+	"github.com/kosalnik/metrics/internal/config"
 )
 
 type SenderSimple struct {
