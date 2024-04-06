@@ -1,14 +1,15 @@
 package server
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/config"
@@ -19,6 +20,7 @@ import (
 type App struct {
 	Storage storage.Storage
 	config  config.Server
+	db      *sql.DB
 }
 
 func NewApp(cfg config.Server) *App {
@@ -33,8 +35,29 @@ func (app *App) Run() error {
 	if err := app.initBackup(); err != nil {
 		return err
 	}
+
+	if err := app.initDb(app.config.Db); err != nil {
+		return err
+	}
+	defer func() {
+		if err := app.db.Close(); err != nil {
+			logrus.WithError(err).Errorf("unable to close db")
+		}
+	}()
+
 	logrus.Info("Listen " + app.config.Address)
+
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
+}
+
+func (app *App) initDb(cfg config.Db) error {
+	db, err := sql.Open("pgx", cfg.DSN)
+	if err != nil {
+		return err
+	}
+	app.db = db
+
+	return nil
 }
 
 func (app *App) initBackup() error {
@@ -70,35 +93,7 @@ func (app *App) GetRouter() chi.Router {
 			r.With(requireJSONMw).Post("/", handlers.NewRestGetHandler(app.Storage))
 			r.Get("/{type}/{name}", handlers.NewGetHandler(app.Storage))
 		})
+		r.Get("/ping", handlers.NewPingHandler(app.db))
 	})
 	return r
-}
-
-func gzipMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ow := w
-
-		acceptEncoding := r.Header.Get("Accept-Encoding")
-		supportsGzip := strings.Contains(acceptEncoding, "gzip")
-		if supportsGzip {
-			cw := newCompressWriter(w)
-			ow = cw
-			defer cw.Close()
-		}
-
-		contentEncoding := r.Header.Get("Content-Encoding")
-		sendsGzip := strings.Contains(contentEncoding, "gzip")
-		if sendsGzip {
-			// оборачиваем тело запроса в io.Reader с поддержкой декомпрессии
-			cr, err := newCompressReader(r.Body)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			r.Body = cr
-			defer cr.Close()
-		}
-
-		next.ServeHTTP(ow, r)
-	})
 }

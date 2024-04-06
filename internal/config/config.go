@@ -22,6 +22,11 @@ type Server struct {
 	StoreInterval   int
 	FileStoragePath string
 	Restore         bool
+	Db              Db
+}
+
+type Db struct {
+	DSN string
 }
 
 type Logger struct {
