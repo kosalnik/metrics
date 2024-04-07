@@ -105,9 +105,6 @@ func (d DBStorage) GetAll(ctx context.Context) ([]models.Metrics, error) {
 func (d DBStorage) getAllGauge(ctx context.Context) ([]models.Metrics, error) {
 	var res []models.Metrics
 	rows, err := d.db.QueryContext(ctx, "SELECT id, value FROM gauge ORDER BY id")
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return res, nil
@@ -124,15 +121,16 @@ func (d DBStorage) getAllGauge(ctx context.Context) ([]models.Metrics, error) {
 		res = append(res, m)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 
 func (d DBStorage) getAllCounter(ctx context.Context) ([]models.Metrics, error) {
 	var res []models.Metrics
 	rows, err := d.db.QueryContext(ctx, "SELECT id, value FROM counter ORDER BY id")
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return res, nil
@@ -147,6 +145,10 @@ func (d DBStorage) getAllCounter(ctx context.Context) ([]models.Metrics, error) 
 			return nil, err
 		}
 		res = append(res, m)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return res, nil
