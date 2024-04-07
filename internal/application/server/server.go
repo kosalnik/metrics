@@ -1,7 +1,7 @@
 package server
 
 import (
-	"database/sql"
+	"context"
 	"errors"
 	"net/http"
 	"os"
@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/kosalnik/metrics/internal/infra/postgres"
 	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/config"
@@ -20,28 +21,23 @@ import (
 type App struct {
 	Storage storage.Storage
 	config  config.Server
-	db      *sql.DB
 }
 
 func NewApp(cfg config.Server) *App {
-	storeInterval := time.Second * time.Duration(cfg.StoreInterval)
+
 	return &App{
-		Storage: storage.NewStorage(&storeInterval, &cfg.FileStoragePath),
-		config:  cfg,
+		config: cfg,
 	}
 }
 
 func (app *App) Run() error {
-	if err := app.initBackup(); err != nil {
-		return err
-	}
-
-	if err := app.initDB(app.config.DB); err != nil {
+	ctx := context.Background()
+	if err := app.initStorage(ctx, app.config); err != nil {
 		return err
 	}
 	defer func() {
-		if err := app.db.Close(); err != nil {
-			logrus.WithError(err).Errorf("unable to close db")
+		if err := app.Storage.Close(); err != nil {
+			logrus.WithError(err).Errorf("unable to close storage")
 		}
 	}()
 
@@ -50,22 +46,36 @@ func (app *App) Run() error {
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
 }
 
-func (app *App) initDB(cfg config.DB) error {
-	db, err := sql.Open("pgx", cfg.DSN)
-	if err != nil {
-		return err
+func (app *App) initStorage(ctx context.Context, cfg config.Server) error {
+	if cfg.DB.DSN == "" {
+		storeInterval := time.Second * time.Duration(cfg.StoreInterval)
+		app.Storage = storage.NewMemStorage(&storeInterval, &cfg.FileStoragePath)
+		if err := app.initBackup(ctx); err != nil {
+			return err
+		}
+	} else {
+		return app.initDB(ctx, cfg.DB)
 	}
-	app.db = db
 
 	return nil
 }
 
-func (app *App) initBackup() error {
+func (app *App) initDB(ctx context.Context, cfg config.DB) error {
+	db, err := postgres.NewDB(ctx, cfg)
+	if err != nil {
+		return err
+	}
+	app.Storage = db
+
+	return nil
+}
+
+func (app *App) initBackup(ctx context.Context) error {
 	if app.config.FileStoragePath == "" {
 		return nil
 	}
 	if app.config.Restore {
-		if err := app.Storage.Recover(app.config.FileStoragePath); err != nil {
+		if err := app.Storage.Recover(ctx, app.config.FileStoragePath); err != nil {
 			if errors.Is(os.ErrNotExist, err) {
 				return err
 			}
@@ -93,7 +103,7 @@ func (app *App) GetRouter() chi.Router {
 			r.With(requireJSONMw).Post("/", handlers.NewRestGetHandler(app.Storage))
 			r.Get("/{type}/{name}", handlers.NewGetHandler(app.Storage))
 		})
-		r.Get("/ping", handlers.NewPingHandler(app.db))
+		r.Get("/ping", handlers.NewPingHandler(app.Storage))
 	})
 	return r
 }

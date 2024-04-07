@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -59,7 +60,8 @@ func TestMemStorage_GetCounter(t *testing.T) {
 				gauge:   tt.storageState.gauge,
 				counter: tt.storageState.counter,
 			}
-			got, ok := m.GetCounter(tt.metricName)
+			got, ok, err := m.GetCounter(context.Background(), tt.metricName)
+			assert.NoError(t, err)
 			assert.Equal(t, tt.wantOk, ok)
 			assert.Equal(t, got, tt.want)
 		})
@@ -119,7 +121,8 @@ func TestMemStorage_GetGauge(t *testing.T) {
 				gauge:   tt.storageState.gauge,
 				counter: tt.storageState.counter,
 			}
-			got, ok := m.GetGauge(tt.metricName)
+			got, ok, err := m.GetGauge(context.Background(), tt.metricName)
+			assert.NoError(t, err)
 			assert.Equal(t, tt.wantOk, ok)
 			assert.Equal(t, tt.want, got)
 		})
@@ -162,14 +165,16 @@ func TestMemStorage_IncCounter(t *testing.T) {
 			want:   5,
 		},
 	}
+	ctx := context.Background()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &MemStorage{
 				gauge:   tt.storageState.gauge,
 				counter: tt.storageState.counter,
 			}
-			m.IncCounter(tt.metric.name, tt.metric.value)
-			actual, ok := m.GetCounter(tt.metric.name)
+			m.IncCounter(ctx, tt.metric.name, tt.metric.value)
+			actual, ok, err := m.GetCounter(ctx, tt.metric.name)
+			assert.NoError(t, err)
 			assert.True(t, ok)
 			assert.Equal(t, tt.want, actual)
 		})
@@ -177,15 +182,17 @@ func TestMemStorage_IncCounter(t *testing.T) {
 }
 
 func TestMemStorage_SetGauge(t *testing.T) {
-	m := NewStorage(nil, nil)
+	m := NewMemStorage(nil, nil)
 	assert.NotNil(t, m)
-	m.SetGauge("test", 1)
-	v, ok := m.GetGauge("test")
+	ctx := context.Background()
+	m.SetGauge(ctx, "test", 1)
+	v, ok, err := m.GetGauge(ctx, "test")
+	assert.NoError(t, err)
 	assert.True(t, ok)
 	assert.Equal(t, 1.0, v)
 }
 
 func TestNewStorage(t *testing.T) {
-	m := NewStorage(nil, nil)
+	m := NewMemStorage(nil, nil)
 	assert.NotNil(t, m)
 }

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"sync"
@@ -25,7 +26,7 @@ type MemStorageItem struct {
 	index int
 }
 
-func NewStorage(backupInterval *time.Duration, backupPath *string) *MemStorage {
+func NewMemStorage(backupInterval *time.Duration, backupPath *string) *MemStorage {
 	return &MemStorage{
 		gauge:          make(map[string]float64),
 		counter:        make(map[string]int64),
@@ -35,52 +36,57 @@ func NewStorage(backupInterval *time.Duration, backupPath *string) *MemStorage {
 	}
 }
 
-func (m *MemStorage) GetGauge(name string) (v float64, ok bool) {
+var _ Storage = &MemStorage{}
+
+func (m *MemStorage) GetGauge(_ context.Context, name string) (v float64, ok bool, err error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	v, ok = m.gauge[name]
+
 	return
 }
 
-func (m *MemStorage) GetCounter(name string) (v int64, ok bool) {
+func (m *MemStorage) GetCounter(_ context.Context, name string) (v int64, ok bool, err error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	v, ok = m.counter[name]
+
 	return
 }
 
-func (m *MemStorage) SetGauge(name string, value float64) float64 {
+func (m *MemStorage) SetGauge(ctx context.Context, name string, value float64) (float64, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.gauge[name] = value
-	m.checkBackup()
-	return value
+	m.checkBackup(ctx)
+
+	return value, nil
 }
 
-func (m *MemStorage) IncCounter(name string, value int64) int64 {
+func (m *MemStorage) IncCounter(ctx context.Context, name string, value int64) (int64, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	v := m.counter[name] + value
 	logrus.WithFields(logrus.Fields{"k": name, "old": m.counter[name], "new": v}).Info("IncCounter")
 	m.counter[name] = v
-	m.checkBackup()
-	return v
+	m.checkBackup(ctx)
+	return v, nil
 }
 
-func (m *MemStorage) checkBackup() {
+func (m *MemStorage) checkBackup(ctx context.Context) {
 	if m.backupInterval == nil || m.backupPath == nil {
 		return
 	}
 	if *m.backupInterval > 0 && m.lastBackup.Add(*m.backupInterval).Before(time.Now()) {
 		return
 	}
-	if err := m.Store(*m.backupPath); err != nil {
+	if err := m.Store(ctx, *m.backupPath); err != nil {
 		logrus.WithError(err).Error("failed backup")
 	}
 	m.lastBackup = time.Now()
 }
 
-func (m *MemStorage) GetAll() []models.Metrics {
+func (m *MemStorage) GetAll(_ context.Context) ([]models.Metrics, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res := make([]models.Metrics, len(m.gauge)+len(m.counter))
@@ -95,7 +101,15 @@ func (m *MemStorage) GetAll() []models.Metrics {
 		res[i] = models.Metrics{ID: k, MType: models.MCounter, Delta: &t}
 		i++
 	}
-	return res
+	return res, nil
+}
+
+func (m *MemStorage) Close() error {
+	return nil
+}
+
+func (m *MemStorage) Ping(_ context.Context) error {
+	return nil
 }
 
 type Backup struct {
@@ -103,7 +117,7 @@ type Backup struct {
 	Counter map[string]int64
 }
 
-func (m *MemStorage) Store(path string) error {
+func (m *MemStorage) Store(_ context.Context, path string) error {
 	f, err := os.CreateTemp(os.TempDir(), "backup")
 	if err != nil {
 		return err
@@ -125,7 +139,7 @@ func (m *MemStorage) Store(path string) error {
 	return nil
 }
 
-func (m *MemStorage) Recover(path string) error {
+func (m *MemStorage) Recover(_ context.Context, path string) error {
 	d, err := os.ReadFile(path)
 	if err != nil {
 		return err

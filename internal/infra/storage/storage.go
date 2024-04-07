@@ -1,13 +1,19 @@
 package storage
 
-import "github.com/kosalnik/metrics/internal/models"
+import (
+	"context"
+
+	"github.com/kosalnik/metrics/internal/models"
+)
 
 type Storage interface {
-	GetGauge(name string) (float64, bool)
-	SetGauge(name string, value float64) float64
-	GetCounter(name string) (int64, bool)
-	IncCounter(name string, value int64) int64
-	GetAll() []models.Metrics
-	Store(path string) error
-	Recover(path string) error
+	GetGauge(ctx context.Context, name string) (float64, bool, error)
+	SetGauge(ctx context.Context, name string, value float64) (float64, error)
+	GetCounter(ctx context.Context, name string) (int64, bool, error)
+	IncCounter(ctx context.Context, name string, value int64) (int64, error)
+	GetAll(ctx context.Context) ([]models.Metrics, error)
+	Ping(ctx context.Context) error
+	Close() error
+	Store(ctx context.Context, path string) error
+	Recover(ctx context.Context, path string) error
 }

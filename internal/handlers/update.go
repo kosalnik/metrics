@@ -30,7 +30,11 @@ func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *
 		}
 		switch m.MType {
 		case models.MGauge:
-			r := s.SetGauge(m.ID, *m.Value)
+			r, err := s.SetGauge(req.Context(), m.ID, *m.Value)
+			if err != nil {
+				http.Error(res, `"fail set gauge"`, http.StatusInternalServerError)
+				return
+			}
 			m.Value = &r
 			if out, err := json.Marshal(m); err != nil {
 				http.Error(res, `"internal error"`, http.StatusInternalServerError)
@@ -39,7 +43,11 @@ func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *
 			}
 			return
 		case models.MCounter:
-			r := s.IncCounter(m.ID, *m.Delta)
+			r, err := s.IncCounter(req.Context(), m.ID, *m.Delta)
+			if err != nil {
+				http.Error(res, `"fail inc counter"`, http.StatusInternalServerError)
+				return
+			}
 			m.Delta = &r
 			if out, err := json.Marshal(m); err != nil {
 				http.Error(res, `"internal error"`, http.StatusInternalServerError)
@@ -67,7 +75,11 @@ func NewUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 
 				return
 			}
-			r := s.SetGauge(mName, v)
+			r, err := s.SetGauge(req.Context(), mName, v)
+			if err != nil {
+				http.Error(res, `"fail set gauge"`, http.StatusInternalServerError)
+				return
+			}
 			if _, err := res.Write([]byte(fmt.Sprintf("%f", r))); err != nil {
 				logrus.WithError(err).Error("fail write response")
 			}
@@ -79,7 +91,12 @@ func NewUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 				http.Error(res, "bad request", http.StatusBadRequest)
 				return
 			}
-			r := s.IncCounter(mName, v)
+			r, err := s.IncCounter(req.Context(), mName, v)
+			if err != nil {
+				logrus.WithError(err).Error("fail inc counter")
+				http.Error(res, `"fail inc counter"`, http.StatusInternalServerError)
+				return
+			}
 			if _, err := res.Write([]byte(fmt.Sprintf("%d", r))); err != nil {
 				logrus.WithError(err).Error("fail write response")
 			}

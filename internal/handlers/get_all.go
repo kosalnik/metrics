@@ -20,17 +20,29 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 		} else {
 			w.Header().Set("Content-Type", "text/html")
 		}
-		items := s.GetAll()
-		var err error
+		items, err := s.GetAll(req.Context())
+		if err != nil {
+			logrus.WithError(err).Error("fail get all")
+			http.Error(w, `"fail get all"`, http.StatusInternalServerError)
+
+			return
+		}
+		if len(items) == 0 {
+			w.Write([]byte(`[]`))
+			return
+		}
 		var data []byte
 		if isJSON {
 			data, err = json.Marshal(items)
 			if err != nil {
 				http.Error(w, `"fail marshal"`, http.StatusInternalServerError)
+
+				return
 			}
 		} else {
 			var t []string
 			for _, v := range items {
+				logrus.WithField("v", v).Info("asdf")
 				t = append(t, v.String())
 			}
 			sort.Strings(t)

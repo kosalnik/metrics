@@ -29,7 +29,11 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 		}
 		switch m.MType {
 		case models.MGauge:
-			v, ok := s.GetGauge(m.ID)
+			v, ok, err := s.GetGauge(req.Context(), m.ID)
+			if err != nil {
+				http.Error(w, `"fail get gauge"`, http.StatusInternalServerError)
+				return
+			}
 			if !ok {
 				http.NotFound(w, req)
 				return
@@ -43,7 +47,11 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 			}
 			return
 		case models.MCounter:
-			v, ok := s.GetCounter(m.ID)
+			v, ok, err := s.GetCounter(req.Context(), m.ID)
+			if err != nil {
+				http.Error(w, `"fail get counter"`, http.StatusInternalServerError)
+				return
+			}
 			if !ok {
 				http.NotFound(w, req)
 				return
@@ -66,7 +74,11 @@ func NewGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Re
 		mName := chi.URLParam(req, "name")
 		switch mType {
 		case models.MGauge:
-			v, ok := s.GetGauge(mName)
+			v, ok, err := s.GetGauge(req.Context(), mName)
+			if err != nil {
+				http.Error(w, `"fail get gauge"`, http.StatusInternalServerError)
+				return
+			}
 			if !ok {
 				http.NotFound(w, req)
 				return
@@ -77,7 +89,11 @@ func NewGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Re
 			}
 			return
 		case models.MCounter:
-			v, ok := s.GetCounter(mName)
+			v, ok, err := s.GetCounter(req.Context(), mName)
+			if err != nil {
+				http.Error(w, `"fail get counter"`, http.StatusInternalServerError)
+				return
+			}
 			if !ok {
 				http.NotFound(w, req)
 				return
