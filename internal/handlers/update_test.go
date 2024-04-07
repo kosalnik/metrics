@@ -5,11 +5,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/kosalnik/metrics/internal/handlers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/kosalnik/metrics/internal/application/server"
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
@@ -74,11 +74,16 @@ func TestUpdateHandler_Handle(t *testing.T) {
 			want:    want{statusCode: http.StatusNotFound},
 		},
 	}
+
+	s := storage.NewMemStorage(nil, nil)
+	h := handlers.NewUpdateHandler(s)
+
+	r := chi.NewRouter()
+	r.Post("/update/{type}/{name}/{value}", h)
+	srv := httptest.NewServer(r)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			app := server.NewApp(config.Server{})
-			r := app.GetRouter()
-			srv := httptest.NewServer(r)
 			response, err := srv.Client().Post(srv.URL+tt.path, "text/plain", nil)
 			require.NoError(t, err)
 			err = response.Body.Close()
