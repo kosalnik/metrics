@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/models"
@@ -17,7 +18,7 @@ var schemaGaugeSQL = `CREATE TABLE IF NOT EXISTS gauge(
 
 var schemaCounterSQL = `CREATE TABLE IF NOT EXISTS counter(
     	id VARCHAR(200) PRIMARY KEY,
-    	value double precision not null
+    	value bigint not null
     )`
 
 type DBStorage struct {
@@ -87,6 +88,61 @@ func (d DBStorage) IncCounter(ctx context.Context, name string, value int64) (in
 	}
 	v, _, err := d.GetCounter(ctx, name)
 	return v, err
+}
+
+func (d DBStorage) inTransaction(ctx context.Context, fn func(tr *sql.Tx) error) error {
+	tr, err := d.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	err = fn(tr)
+	if err != nil {
+		err := tr.Rollback()
+		if err != nil {
+			return fmt.Errorf("fail rollback transaction: %w", err)
+		}
+		return err
+	}
+	return nil
+}
+
+func (d DBStorage) UpsertAll(ctx context.Context, list []models.Metrics) error {
+	return d.inTransaction(ctx, func(tr *sql.Tx) error {
+		incCounterSt, err := tr.PrepareContext(
+			ctx,
+			"INSERT INTO counter (id, value) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET value = counter.value + $2",
+		)
+		if err != nil {
+			return fmt.Errorf("fail upsert: %w", err)
+		}
+		defer incCounterSt.Close()
+		setGaugeSt, err := tr.PrepareContext(
+			ctx,
+			"INSERT INTO gauge (id, value) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET value = $2",
+		)
+		if err != nil {
+			return fmt.Errorf("fail upsert: %w", err)
+		}
+		defer setGaugeSt.Close()
+		logrus.WithField("list", list).Info("upsertAll")
+		for _, v := range list {
+			switch v.MType {
+			case models.MGauge:
+				if _, err := setGaugeSt.ExecContext(ctx, v.ID, *v.Value); err != nil {
+					return err
+				}
+				continue
+			case models.MCounter:
+				if _, err := incCounterSt.ExecContext(ctx, v.ID, *v.Delta); err != nil {
+					return err
+				}
+			}
+		}
+		if err := tr.Commit(); err != nil {
+			return fmt.Errorf("fail commit transaction: %w", err)
+		}
+		return nil
+	})
 }
 
 func (d DBStorage) GetAll(ctx context.Context) ([]models.Metrics, error) {

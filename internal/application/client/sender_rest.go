@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -91,4 +92,40 @@ func (c *SenderRest) SendCounter(k string, v int64) {
 			logrus.Errorf("fail close body. %s", err.Error())
 		}
 	}()
+}
+
+func (c *SenderRest) SendBatch(ctx context.Context, list []models.Metrics) error {
+	if len(list) == 0 {
+		return nil
+	}
+	data, err := json.Marshal(list)
+	if err != nil {
+		logrus.WithField("list", list).WithError(err).Error("fail send batch. fail marshal")
+
+		return err
+	}
+	body := bytes.NewReader(data)
+	url := fmt.Sprintf("http://%s/updates/", c.config.CollectorAddress)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
+	if err != nil {
+		logrus.WithError(err).Errorf("send batch. fail make request")
+
+		return err
+	}
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
+	req.Header.Set("Content-Type", "application/json")
+	r, err := c.client.Do(req)
+	logrus.WithFields(logrus.Fields{"url": url, "body": string(data)}).Info("send counter")
+	if err != nil {
+		logrus.WithError(err).Error("Fail push")
+
+		return err
+	}
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			logrus.WithError(err).Error("fail close body")
+		}
+	}()
+
+	return nil
 }

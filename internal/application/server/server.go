@@ -95,6 +95,7 @@ func (app *App) GetRouter() chi.Router {
 	requireJSONMw := middleware.AllowContentType("application/json")
 	r.Route("/", func(r chi.Router) {
 		r.With(requireJSONMw).Get("/", handlers.NewGetAllHandler(app.Storage))
+		r.With(requireJSONMw).Post("/updates/", handlers.NewUpdateBatchHandler(app.Storage))
 		r.Route("/update", func(r chi.Router) {
 			r.With(requireJSONMw).Post("/", handlers.NewRestUpdateHandler(app.Storage))
 			r.Post("/{type}/{name}/{value}", handlers.NewUpdateHandler(app.Storage))

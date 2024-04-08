@@ -11,6 +11,7 @@ type Storage interface {
 	SetGauge(ctx context.Context, name string, value float64) (float64, error)
 	GetCounter(ctx context.Context, name string) (int64, bool, error)
 	IncCounter(ctx context.Context, name string, value int64) (int64, error)
+	UpsertAll(ctx context.Context, list []models.Metrics) error
 	GetAll(ctx context.Context) ([]models.Metrics, error)
 	Ping(ctx context.Context) error
 	Close() error

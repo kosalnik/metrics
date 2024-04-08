@@ -1,12 +1,14 @@
 package client
 
 import (
+	"context"
 	"math/rand"
 	"sync"
 	"time"
 
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/metric"
+	"github.com/kosalnik/metrics/internal/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,38 +29,71 @@ func NewClient(config config.Agent) *Client {
 	}
 }
 
-func (c *Client) Run() {
+func (c *Client) Run(ctx context.Context) {
 	logrus.Infof("Poll interval: %d", c.config.PollInterval)
 	logrus.Infof("Report interval: %d", c.config.ReportInterval)
 	logrus.Infof("Collector address: %s", c.config.CollectorAddress)
-	go c.poll()
-	c.push()
+	go c.poll(ctx)
+	c.push(ctx)
 }
 
-func (c *Client) push() {
+func (c *Client) push(ctx context.Context) {
+	tick := time.NewTicker(time.Duration(c.config.ReportInterval) * time.Second)
+	defer tick.Stop()
 	for {
-		time.Sleep(time.Duration(c.config.ReportInterval) * time.Second)
-		c.mu.Lock()
-		logrus.Info("Push")
-		if c.gauge != nil {
-			for k, v := range c.gauge {
-				c.sender.SendGauge(k, v)
+		select {
+		case <-ctx.Done():
+			return
+		case <-tick.C:
+			logrus.Info("Push")
+			if err := c.sender.SendBatch(ctx, c.collectMetrics()); err != nil {
+				logrus.WithError(err).Error("fail push")
 			}
 		}
-		c.sender.SendCounter("PollCount", c.pollCount)
-		c.sender.SendGauge("RandomValue", rand.Float64())
-		c.mu.Unlock()
 	}
 }
 
-func (c *Client) poll() {
-	for {
-		c.mu.Lock()
-		logrus.Debug("Poll")
-		c.gauge = metric.GetMetrics()
-		c.pollCount = c.pollCount + 1
-		logrus.Debugf("PollCount=%d", c.pollCount)
-		c.mu.Unlock()
-		time.Sleep(time.Duration(c.config.PollInterval) * time.Second)
+func (c *Client) collectMetrics() []models.Metrics {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	list := make([]models.Metrics, len(c.gauge)+2)
+	i := 0
+	if c.gauge != nil {
+		for k, v := range c.gauge {
+			kk := k
+			vv := v
+			list[i] = models.Metrics{ID: kk, MType: models.MGauge, Value: &vv}
+			i++
+		}
 	}
+
+	vv := c.pollCount
+	list[i] = models.Metrics{ID: "PollCount", MType: models.MCounter, Delta: &vv}
+
+	rv := rand.Float64()
+	list[i+1] = models.Metrics{ID: "RandomValue", MType: models.MGauge, Value: &rv}
+
+	return list
+}
+
+func (c *Client) poll(ctx context.Context) {
+	tick := time.NewTicker(time.Duration(c.config.PollInterval) * time.Second)
+	defer tick.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-tick.C:
+			c.pollMetrics()
+		}
+	}
+}
+
+func (c *Client) pollMetrics() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.gauge = metric.GetMetrics()
+	c.pollCount = c.pollCount + 1
+	logrus.WithField("count", c.pollCount).Debug("PollCount")
 }

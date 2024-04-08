@@ -73,6 +73,23 @@ func (m *MemStorage) IncCounter(ctx context.Context, name string, value int64) (
 	return v, nil
 }
 
+func (m *MemStorage) UpsertAll(ctx context.Context, list []models.Metrics) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	logrus.WithField("list", list).Info("upsertAll")
+	for _, v := range list {
+		switch v.MType {
+		case models.MGauge:
+			m.gauge[v.ID] = *v.Value
+			continue
+		case models.MCounter:
+			m.counter[v.ID] += *v.Delta
+		}
+	}
+	m.checkBackup(ctx)
+	return nil
+}
+
 func (m *MemStorage) checkBackup(ctx context.Context) {
 	if m.backupInterval == nil || m.backupPath == nil {
 		return
