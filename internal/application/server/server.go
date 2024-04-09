@@ -10,11 +10,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/kosalnik/metrics/internal/infra/postgres"
-	"github.com/sirupsen/logrus"
-
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
+	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/infra/postgres"
 	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
@@ -37,11 +36,11 @@ func (app *App) Run() error {
 	}
 	defer func() {
 		if err := app.Storage.Close(); err != nil {
-			logrus.WithError(err).Errorf("unable to close storage")
+			logger.Logger.WithError(err).Errorf("unable to close storage")
 		}
 	}()
 
-	logrus.Info("Listen " + app.config.Address)
+	logger.Logger.Info("Listen " + app.config.Address)
 
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
 }

@@ -5,8 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
-
+	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/infra/storage"
 	"github.com/kosalnik/metrics/internal/models"
 )
@@ -15,7 +14,7 @@ func NewUpdateBatchHandler(s storage.Storage) func(res http.ResponseWriter, req 
 	return func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "application/json")
 		data, err := io.ReadAll(req.Body)
-		logrus.Debugf("Handle %s", data)
+		logger.Logger.Debugf("Handle %s", data)
 		if err != nil {
 			http.Error(res, `"Wrong data"`, http.StatusBadRequest)
 			return

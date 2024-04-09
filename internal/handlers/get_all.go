@@ -6,8 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-
+	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
@@ -22,7 +21,7 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 		}
 		items, err := s.GetAll(req.Context())
 		if err != nil {
-			logrus.WithError(err).Error("fail get all")
+			logger.Logger.WithError(err).Error("fail get all")
 			http.Error(w, `"fail get all"`, http.StatusInternalServerError)
 
 			return
@@ -42,14 +41,14 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 		} else {
 			var t []string
 			for _, v := range items {
-				logrus.WithField("v", v).Info("asdf")
+				logger.Logger.WithField("v", v).Info("asdf")
 				t = append(t, v.String())
 			}
 			sort.Strings(t)
 			data = []byte(strings.Join(t, "\n"))
 		}
 		if _, err := w.Write(data); err != nil {
-			logrus.WithError(err).Error("fail write response")
+			logger.Logger.WithError(err).Error("fail write response")
 		}
 	}
 }

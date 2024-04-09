@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/kosalnik/metrics/internal/config"
+	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/models"
-	"github.com/sirupsen/logrus"
 )
 
 var schemaGaugeSQL = `CREATE TABLE IF NOT EXISTS gauge(
@@ -49,7 +49,7 @@ func (d DBStorage) GetGauge(ctx context.Context, name string) (float64, bool, er
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, false, nil
 		}
-		logrus.WithError(err).Error("fail db request. get gauge")
+		logger.Logger.WithError(err).Error("fail db request. get gauge")
 		return 0, false, err
 	}
 	return v, true, nil
@@ -59,7 +59,7 @@ func (d DBStorage) SetGauge(ctx context.Context, name string, value float64) (fl
 	s := "INSERT INTO gauge (id, value) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET value = $2"
 	_, err := d.db.ExecContext(ctx, s, name, value)
 	if err != nil {
-		logrus.WithError(err).Error("fail db request. set gauge")
+		logger.Logger.WithError(err).Error("fail db request. set gauge")
 		return 0, err
 	}
 	v, _, err := d.GetGauge(ctx, name)
@@ -73,7 +73,7 @@ func (d DBStorage) GetCounter(ctx context.Context, name string) (int64, bool, er
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, false, nil
 		}
-		logrus.WithError(err).Error("fail db request. get counter")
+		logger.Logger.WithError(err).Error("fail db request. get counter")
 		return 0, false, err
 	}
 	return v, true, nil
@@ -83,7 +83,7 @@ func (d DBStorage) IncCounter(ctx context.Context, name string, value int64) (in
 	s := "INSERT INTO counter (id, value) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET value = counter.value + $2"
 	_, err := d.db.ExecContext(ctx, s, name, value)
 	if err != nil {
-		logrus.WithError(err).Error("fail db request. inc counter")
+		logger.Logger.WithError(err).Error("fail db request. inc counter")
 		return 0, err
 	}
 	v, _, err := d.GetCounter(ctx, name)
@@ -124,7 +124,7 @@ func (d DBStorage) UpsertAll(ctx context.Context, list []models.Metrics) error {
 			return fmt.Errorf("fail upsert: %w", err)
 		}
 		defer setGaugeSt.Close()
-		logrus.WithField("list", list).Info("upsertAll")
+		logger.Logger.WithField("list", list).Info("upsertAll")
 		for _, v := range list {
 			switch v.MType {
 			case models.MGauge:

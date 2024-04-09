@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/kosalnik/metrics/internal/config"
+	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/infra/metric"
 	"github.com/kosalnik/metrics/internal/models"
-	"github.com/sirupsen/logrus"
 )
 
 type Client struct {
@@ -30,9 +30,9 @@ func NewClient(config config.Agent) *Client {
 }
 
 func (c *Client) Run(ctx context.Context) {
-	logrus.Infof("Poll interval: %d", c.config.PollInterval)
-	logrus.Infof("Report interval: %d", c.config.ReportInterval)
-	logrus.Infof("Collector address: %s", c.config.CollectorAddress)
+	logger.Logger.Infof("Poll interval: %d", c.config.PollInterval)
+	logger.Logger.Infof("Report interval: %d", c.config.ReportInterval)
+	logger.Logger.Infof("Collector address: %s", c.config.CollectorAddress)
 	go c.poll(ctx)
 	c.push(ctx)
 }
@@ -45,9 +45,9 @@ func (c *Client) push(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-tick.C:
-			logrus.Info("Push")
+			logger.Logger.Info("Push")
 			if err := c.sender.SendBatch(ctx, c.collectMetrics()); err != nil {
-				logrus.WithError(err).Error("fail push")
+				logger.Logger.WithError(err).Error("fail push")
 			}
 		}
 	}
@@ -95,5 +95,5 @@ func (c *Client) pollMetrics() {
 	defer c.mu.Unlock()
 	c.gauge = metric.GetMetrics()
 	c.pollCount = c.pollCount + 1
-	logrus.WithField("count", c.pollCount).Debug("PollCount")
+	logger.Logger.WithField("count", c.pollCount).Debug("PollCount")
 }

@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/models"
@@ -67,7 +68,7 @@ func (m *MemStorage) IncCounter(ctx context.Context, name string, value int64) (
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	v := m.counter[name] + value
-	logrus.WithFields(logrus.Fields{"k": name, "old": m.counter[name], "new": v}).Info("IncCounter")
+	logger.Logger.WithFields(logrus.Fields{"k": name, "old": m.counter[name], "new": v}).Info("IncCounter")
 	m.counter[name] = v
 	m.checkBackup(ctx)
 	return v, nil
@@ -76,7 +77,7 @@ func (m *MemStorage) IncCounter(ctx context.Context, name string, value int64) (
 func (m *MemStorage) UpsertAll(ctx context.Context, list []models.Metrics) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	logrus.WithField("list", list).Info("upsertAll")
+	logger.Logger.WithField("list", list).Info("upsertAll")
 	for _, v := range list {
 		switch v.MType {
 		case models.MGauge:
@@ -98,7 +99,7 @@ func (m *MemStorage) checkBackup(ctx context.Context) {
 		return
 	}
 	if err := m.Store(ctx, *m.backupPath); err != nil {
-		logrus.WithError(err).Error("failed backup")
+		logger.Logger.WithError(err).Error("failed backup")
 	}
 	m.lastBackup = time.Now()
 }
