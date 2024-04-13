@@ -31,7 +31,7 @@ func (c *SenderRest) SendGauge(k string, v float64) {
 	m := models.Metrics{
 		ID:    k,
 		MType: models.MGauge,
-		Value: &v,
+		Value: v,
 	}
 	data, err := json.Marshal(m)
 	if err != nil {
@@ -65,8 +65,8 @@ func (c *SenderRest) SendCounter(k string, v int64) {
 	m := models.Metrics{
 		ID:    k,
 		MType: models.MCounter,
-		Delta: &v,
-		Value: &vv,
+		Delta: v,
+		Value: vv,
 	}
 	data, err := json.Marshal(m)
 	if err != nil {

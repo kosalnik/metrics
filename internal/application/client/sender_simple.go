@@ -59,6 +59,7 @@ func (c *SenderSimple) SendBatch(ctx context.Context, list []models.Metrics) err
 	data, err := json.Marshal(list)
 	if err != nil {
 		logger.Logger.WithField("list", list).WithError(err).Error("fail send batch. fail marshal")
+
 		return err
 	}
 	body := bytes.NewReader(data)
@@ -66,6 +67,7 @@ func (c *SenderSimple) SendBatch(ctx context.Context, list []models.Metrics) err
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 	if err != nil {
 		logger.Logger.WithError(err).Errorf("send batch. fail make request")
+
 		return err
 	}
 	req.Header.Set("Accept-Encoding", "gzip, deflate")
@@ -74,6 +76,7 @@ func (c *SenderSimple) SendBatch(ctx context.Context, list []models.Metrics) err
 	logger.Logger.WithFields(logrus.Fields{"url": url, "body": string(data)}).Info("send counter")
 	if err != nil {
 		logger.Logger.WithError(err).Error("Fail push")
+
 		return err
 	}
 	defer func() {

@@ -63,16 +63,16 @@ func (c *Client) collectMetrics() []models.Metrics {
 		for k, v := range c.gauge {
 			kk := k
 			vv := v
-			list[i] = models.Metrics{ID: kk, MType: models.MGauge, Value: &vv}
+			list[i] = models.Metrics{ID: kk, MType: models.MGauge, Value: vv}
 			i++
 		}
 	}
 
 	vv := c.pollCount
-	list[i] = models.Metrics{ID: "PollCount", MType: models.MCounter, Delta: &vv}
+	list[i] = models.Metrics{ID: "PollCount", MType: models.MCounter, Delta: vv}
 
 	rv := rand.Float64()
-	list[i+1] = models.Metrics{ID: "RandomValue", MType: models.MGauge, Value: &rv}
+	list[i+1] = models.Metrics{ID: "RandomValue", MType: models.MGauge, Value: rv}
 
 	return list
 }

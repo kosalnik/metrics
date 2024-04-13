@@ -28,17 +28,16 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 		}
 		switch m.MType {
 		case models.MGauge:
-			v, ok, err := s.GetGauge(req.Context(), m.ID)
+			v, err := s.GetGauge(req.Context(), m.ID)
 			if err != nil {
 				http.Error(w, `"fail get gauge"`, http.StatusInternalServerError)
 				return
 			}
-			if !ok {
+			if v == nil {
 				http.NotFound(w, req)
 				return
 			}
-			m.Value = &v
-			if out, err := json.Marshal(m); err != nil {
+			if out, err := json.Marshal(v); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)
 			} else {
 				logger.Logger.WithField("body", string(out)).Info("Handle Get Result")
@@ -46,17 +45,16 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 			}
 			return
 		case models.MCounter:
-			v, ok, err := s.GetCounter(req.Context(), m.ID)
+			v, err := s.GetCounter(req.Context(), m.ID)
 			if err != nil {
 				http.Error(w, `"fail get counter"`, http.StatusInternalServerError)
 				return
 			}
-			if !ok {
+			if v == nil {
 				http.NotFound(w, req)
 				return
 			}
-			m.Delta = &v
-			if out, err := json.Marshal(m); err != nil {
+			if out, err := json.Marshal(v); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)
 			} else {
 				_, _ = w.Write(out)
@@ -73,31 +71,31 @@ func NewGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Re
 		mName := chi.URLParam(req, "name")
 		switch mType {
 		case models.MGauge:
-			v, ok, err := s.GetGauge(req.Context(), mName)
+			v, err := s.GetGauge(req.Context(), mName)
 			if err != nil {
 				http.Error(w, `"fail get gauge"`, http.StatusInternalServerError)
 				return
 			}
-			if !ok {
+			if v == nil {
 				http.NotFound(w, req)
 				return
 			}
-			res := fmt.Sprintf("%v", v)
+			res := fmt.Sprintf("%v", v.Value)
 			if _, err := w.Write([]byte(res)); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			return
 		case models.MCounter:
-			v, ok, err := s.GetCounter(req.Context(), mName)
+			v, err := s.GetCounter(req.Context(), mName)
 			if err != nil {
 				http.Error(w, `"fail get counter"`, http.StatusInternalServerError)
 				return
 			}
-			if !ok {
+			if v == nil {
 				http.NotFound(w, req)
 				return
 			}
-			res := fmt.Sprintf("%v", v)
+			res := fmt.Sprintf("%v", v.Delta)
 			if _, err := w.Write([]byte(res)); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}

@@ -21,13 +21,11 @@ func TestDump_Store(t *testing.T) {
 	require.NoError(t, f.Close())
 	require.NoError(t, os.Remove(f.Name()))
 
-	one := float64(1.1)
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	s := mock.NewMockStorage(ctrl)
-	s.EXPECT().GetAll(ctx).Return([]models.Metrics{models.Metrics{ID: "a", MType: models.MGauge, Value: &one}}, nil)
+	s.EXPECT().GetAll(ctx).Return([]models.Metrics{{ID: "a", MType: models.MGauge, Value: 1.1}}, nil)
 
 	d := NewDump(s, f.Name())
 	err = d.Store(ctx)

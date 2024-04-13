@@ -66,13 +66,12 @@ func (mr *MockStorageMockRecorder) GetAll(ctx interface{}) *gomock.Call {
 }
 
 // GetCounter mocks base method.
-func (m *MockStorage) GetCounter(ctx context.Context, name string) (int64, bool, error) {
+func (m *MockStorage) GetCounter(ctx context.Context, name string) (*models.Metrics, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCounter", ctx, name)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(bool)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret0, _ := ret[0].(*models.Metrics)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetCounter indicates an expected call of GetCounter.
@@ -82,13 +81,12 @@ func (mr *MockStorageMockRecorder) GetCounter(ctx, name interface{}) *gomock.Cal
 }
 
 // GetGauge mocks base method.
-func (m *MockStorage) GetGauge(ctx context.Context, name string) (float64, bool, error) {
+func (m *MockStorage) GetGauge(ctx context.Context, name string) (*models.Metrics, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGauge", ctx, name)
-	ret0, _ := ret[0].(float64)
-	ret1, _ := ret[1].(bool)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret0, _ := ret[0].(*models.Metrics)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetGauge indicates an expected call of GetGauge.
@@ -98,10 +96,10 @@ func (mr *MockStorageMockRecorder) GetGauge(ctx, name interface{}) *gomock.Call 
 }
 
 // IncCounter mocks base method.
-func (m *MockStorage) IncCounter(ctx context.Context, name string, value int64) (int64, error) {
+func (m *MockStorage) IncCounter(ctx context.Context, name string, value int64) (*models.Metrics, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IncCounter", ctx, name, value)
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(*models.Metrics)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -127,10 +125,10 @@ func (mr *MockStorageMockRecorder) Ping(ctx interface{}) *gomock.Call {
 }
 
 // SetGauge mocks base method.
-func (m *MockStorage) SetGauge(ctx context.Context, name string, value float64) (float64, error) {
+func (m *MockStorage) SetGauge(ctx context.Context, name string, value float64) (*models.Metrics, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetGauge", ctx, name, value)
-	ret0, _ := ret[0].(float64)
+	ret0, _ := ret[0].(*models.Metrics)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
