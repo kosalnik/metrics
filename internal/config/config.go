@@ -18,11 +18,15 @@ type Agent struct {
 type Server struct {
 	Logger Logger
 	// ip:host, которые слушает сервер
-	Address         string
+	Address string
+	Backup  Backup
+	DB      DB
+}
+
+type Backup struct {
 	StoreInterval   int
 	FileStoragePath string
 	Restore         bool
-	DB              DB
 }
 
 type DB struct {
@@ -44,6 +48,7 @@ func NewConfig() *Config {
 		Server: Server{
 			Logger:  Logger{Level: "info"},
 			Address: ":8080",
+			Backup:  Backup{},
 		},
 	}
 }

@@ -1,25 +1,22 @@
-package storage
+package memstorage
 
 import (
 	"context"
-	"encoding/json"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/infra/storage"
 	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/models"
 )
 
 type MemStorage struct {
-	mu             sync.Mutex
-	gauge          map[string]float64
-	counter        map[string]int64
-	backupInterval *time.Duration
-	lastBackup     time.Time
-	backupPath     *string
+	mu        sync.Mutex
+	gauge     map[string]float64
+	counter   map[string]int64
+	updatedAt time.Time
 }
 
 type MemStorageItem struct {
@@ -27,17 +24,15 @@ type MemStorageItem struct {
 	index int
 }
 
-func NewMemStorage(backupInterval *time.Duration, backupPath *string) *MemStorage {
+func NewMemStorage() *MemStorage {
 	return &MemStorage{
-		gauge:          make(map[string]float64),
-		counter:        make(map[string]int64),
-		backupInterval: backupInterval,
-		lastBackup:     time.Now(),
-		backupPath:     backupPath,
+		gauge:     make(map[string]float64),
+		counter:   make(map[string]int64),
+		updatedAt: time.Now(),
 	}
 }
 
-var _ Storage = &MemStorage{}
+var _ storage.Storage = &MemStorage{}
 
 func (m *MemStorage) GetGauge(_ context.Context, name string) (v float64, ok bool, err error) {
 	m.mu.Lock()
@@ -59,7 +54,7 @@ func (m *MemStorage) SetGauge(ctx context.Context, name string, value float64) (
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.gauge[name] = value
-	m.checkBackup(ctx)
+	m.updatedAt = time.Now()
 
 	return value, nil
 }
@@ -70,11 +65,15 @@ func (m *MemStorage) IncCounter(ctx context.Context, name string, value int64) (
 	v := m.counter[name] + value
 	logger.Logger.WithFields(logrus.Fields{"k": name, "old": m.counter[name], "new": v}).Info("IncCounter")
 	m.counter[name] = v
-	m.checkBackup(ctx)
+	m.updatedAt = time.Now()
+
 	return v, nil
 }
 
 func (m *MemStorage) UpsertAll(ctx context.Context, list []models.Metrics) error {
+	if len(list) == 0 {
+		return nil
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	logger.Logger.WithField("list", list).Info("upsertAll")
@@ -82,26 +81,14 @@ func (m *MemStorage) UpsertAll(ctx context.Context, list []models.Metrics) error
 		switch v.MType {
 		case models.MGauge:
 			m.gauge[v.ID] = *v.Value
+			m.updatedAt = time.Now()
 			continue
 		case models.MCounter:
 			m.counter[v.ID] += *v.Delta
+			m.updatedAt = time.Now()
 		}
 	}
-	m.checkBackup(ctx)
 	return nil
-}
-
-func (m *MemStorage) checkBackup(ctx context.Context) {
-	if m.backupInterval == nil || m.backupPath == nil {
-		return
-	}
-	if *m.backupInterval > 0 && m.lastBackup.Add(*m.backupInterval).Before(time.Now()) {
-		return
-	}
-	if err := m.Store(ctx, *m.backupPath); err != nil {
-		logger.Logger.WithError(err).Error("failed backup")
-	}
-	m.lastBackup = time.Now()
 }
 
 func (m *MemStorage) GetAll(_ context.Context) ([]models.Metrics, error) {
@@ -130,43 +117,9 @@ func (m *MemStorage) Ping(_ context.Context) error {
 	return nil
 }
 
-type Backup struct {
-	Gauge   map[string]float64
-	Counter map[string]int64
-}
+func (m *MemStorage) UpdatedAt() time.Time {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
-func (m *MemStorage) Store(_ context.Context, path string) error {
-	f, err := os.CreateTemp(os.TempDir(), "backup")
-	if err != nil {
-		return err
-	}
-	savePath := f.Name()
-	d, err := json.Marshal(Backup{Gauge: m.gauge, Counter: m.counter})
-	if err != nil {
-		return err
-	}
-	if _, err := f.Write(d); err != nil {
-		return err
-	}
-	if err := f.Close(); err != nil {
-		return err
-	}
-	if err := os.Rename(savePath, path); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *MemStorage) Recover(_ context.Context, path string) error {
-	d, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	var b Backup
-	if err := json.Unmarshal(d, &b); err != nil {
-		return err
-	}
-	m.gauge = b.Gauge
-	m.counter = b.Counter
-	return nil
+	return m.updatedAt
 }

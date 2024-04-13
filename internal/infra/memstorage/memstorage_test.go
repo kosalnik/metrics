@@ -1,4 +1,4 @@
-package storage
+package memstorage
 
 import (
 	"context"
@@ -185,7 +185,7 @@ func TestMemStorage_IncCounter(t *testing.T) {
 }
 
 func TestMemStorage_SetGauge(t *testing.T) {
-	m := NewMemStorage(nil, nil)
+	m := NewMemStorage()
 	assert.NotNil(t, m)
 	ctx := context.Background()
 	m.SetGauge(ctx, "test", 1)
@@ -196,7 +196,7 @@ func TestMemStorage_SetGauge(t *testing.T) {
 }
 
 func TestNewStorage(t *testing.T) {
-	m := NewMemStorage(nil, nil)
+	m := NewMemStorage()
 	assert.NotNil(t, m)
 }
 
@@ -243,7 +243,7 @@ func TestMemStorage_UpsertAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := NewMemStorage(nil, nil)
+			m := NewMemStorage()
 			require.NoError(t, m.UpsertAll(context.Background(), tt.list), fmt.Sprintf("UpsertAll(%v)", tt.list))
 			require.Equal(t, tt.wantGauge, m.gauge)
 			require.Equal(t, tt.wantCounter, m.counter)

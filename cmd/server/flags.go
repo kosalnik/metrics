@@ -10,9 +10,9 @@ import (
 
 func parseFlags(c *config.Server) {
 	flag.StringVar(&c.Address, "a", ":8080", "server endpoint (ip:port)")
-	flag.IntVar(&c.StoreInterval, "i", 300, "Store interval")
-	flag.StringVar(&c.FileStoragePath, "f", "/tmp/metrics-db.json", "File storage path")
-	flag.BoolVar(&c.Restore, "r", true, "Restore storage before start")
+	flag.IntVar(&c.Backup.StoreInterval, "i", 300, "Store interval")
+	flag.StringVar(&c.Backup.FileStoragePath, "f", "/tmp/metrics-db.json", "File storage path")
+	flag.BoolVar(&c.Backup.Restore, "r", true, "Restore storage before start")
 	flag.StringVar(&c.DB.DSN, "d", "", "Database DSN")
 	flag.Parse()
 	var err error
@@ -20,16 +20,16 @@ func parseFlags(c *config.Server) {
 		c.Address = v
 	}
 	if v := os.Getenv("STORE_INTERVAL"); v != "" {
-		c.StoreInterval, err = strconv.Atoi(v)
+		c.Backup.StoreInterval, err = strconv.Atoi(v)
 		if err != nil {
 			panic("wrong env STORE_INTERVAL")
 		}
 	}
 	if v := os.Getenv("FILE_STORAGE_PATH"); v != "" {
-		c.FileStoragePath = v
+		c.Backup.FileStoragePath = v
 	}
 	if v := os.Getenv("RESTORE"); v != "" {
-		c.Restore, err = strconv.ParseBool(v)
+		c.Backup.Restore, err = strconv.ParseBool(v)
 		if err != nil {
 			panic("wrong env RESTORE")
 		}

@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/kosalnik/metrics/internal/handlers"
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/infra/memstorage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -29,7 +29,7 @@ func TestGetHandler(t *testing.T) {
 	}
 
 	var err error
-	s := storage.NewMemStorage(nil, nil)
+	s := memstorage.NewMemStorage()
 	h := handlers.NewGetHandler(s)
 	_, err = s.IncCounter(context.Background(), "c1", 5)
 	assert.NoError(t, err)

@@ -2,10 +2,12 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	"github.com/kosalnik/metrics/internal/models"
 )
 
+//go:generate mockgen -source=storage.go -destination=./mock/storage.go -package=mock
 type Storage interface {
 	GetGauge(ctx context.Context, name string) (float64, bool, error)
 	SetGauge(ctx context.Context, name string, value float64) (float64, error)
@@ -15,6 +17,5 @@ type Storage interface {
 	GetAll(ctx context.Context) ([]models.Metrics, error)
 	Ping(ctx context.Context) error
 	Close() error
-	Store(ctx context.Context, path string) error
-	Recover(ctx context.Context, path string) error
+	UpdatedAt() time.Time
 }

@@ -2,17 +2,17 @@ package server
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
+	"github.com/kosalnik/metrics/internal/infra/backup"
 	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/infra/memstorage"
 	"github.com/kosalnik/metrics/internal/infra/postgres"
 	"github.com/kosalnik/metrics/internal/infra/storage"
 )
@@ -29,9 +29,11 @@ func NewApp(cfg config.Server) *App {
 	}
 }
 
-func (app *App) Run() error {
-	ctx := context.Background()
-	if err := app.initStorage(ctx, app.config); err != nil {
+func (app *App) Run(ctx context.Context) error {
+	if err := app.initStorage(ctx); err != nil {
+		return err
+	}
+	if err := app.initBackup(ctx); err != nil {
 		return err
 	}
 	defer func() {
@@ -45,22 +47,18 @@ func (app *App) Run() error {
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
 }
 
-func (app *App) initStorage(ctx context.Context, cfg config.Server) error {
-	if cfg.DB.DSN == "" {
-		storeInterval := time.Second * time.Duration(cfg.StoreInterval)
-		app.Storage = storage.NewMemStorage(&storeInterval, &cfg.FileStoragePath)
-		if err := app.initBackup(ctx); err != nil {
-			return err
-		}
+func (app *App) initStorage(ctx context.Context) error {
+	if app.config.DB.DSN == "" {
+		app.Storage = memstorage.NewMemStorage()
 	} else {
-		return app.initDB(ctx, cfg.DB)
+		return app.initDB(ctx)
 	}
 
 	return nil
 }
 
-func (app *App) initDB(ctx context.Context, cfg config.DB) error {
-	db, err := postgres.NewDB(ctx, cfg)
+func (app *App) initDB(ctx context.Context) error {
+	db, err := postgres.NewDB(ctx, app.config.DB)
 	if err != nil {
 		return err
 	}
@@ -70,16 +68,20 @@ func (app *App) initDB(ctx context.Context, cfg config.DB) error {
 }
 
 func (app *App) initBackup(ctx context.Context) error {
-	if app.config.FileStoragePath == "" {
-		return nil
+	var err error
+	bm, err := backup.NewBackupManager(app.Storage, app.config.Backup)
+	if err != nil {
+		return err
 	}
-	if app.config.Restore {
-		if err := app.Storage.Recover(ctx, app.config.FileStoragePath); err != nil {
-			if errors.Is(os.ErrNotExist, err) {
-				return err
-			}
+	if err = bm.Recover(ctx); err != nil {
+		if !os.IsNotExist(err) {
+			return err
 		}
 	}
+	if err = bm.ScheduleBackup(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/kosalnik/metrics/internal/application/server"
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/logger"
@@ -13,7 +15,7 @@ func main() {
 	if err := logger.InitLogger(cfg.Server.Logger); err != nil {
 		panic(err.Error())
 	}
-	err := app.Run()
+	err := app.Run(context.Background())
 	if err != nil {
 		panic(err)
 	}
