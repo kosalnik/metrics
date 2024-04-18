@@ -92,6 +92,7 @@ func (app *App) GetRouter() chi.Router {
 		//gzipMiddleware,
 		middleware.Logger,
 		middleware.Recoverer,
+		HashCheckMiddleware(app.config.Hash),
 	)
 	requireJSONMw := middleware.AllowContentType("application/json")
 	r.Route("/", func(r chi.Router) {

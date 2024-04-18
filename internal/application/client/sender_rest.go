@@ -20,7 +20,9 @@ type SenderRest struct {
 }
 
 func NewSenderRest(config *config.Agent) Sender {
-	c := http.Client{}
+	c := http.Client{
+		Transport: &AddHash{core: http.DefaultTransport},
+	}
 	return &SenderRest{
 		client: &c,
 		config: config,
