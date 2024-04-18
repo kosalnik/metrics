@@ -22,7 +22,7 @@ type SenderRest struct {
 
 func NewSenderRest(config *config.Agent) Sender {
 	c := http.Client{
-		Transport: crypt.VerifyHashInterceptor(config.Hash),
+		Transport: crypt.VerifyHashInterceptor(config.Hash, http.DefaultTransport),
 	}
 	return &SenderRest{
 		client: &c,

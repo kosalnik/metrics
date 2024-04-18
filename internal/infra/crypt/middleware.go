@@ -29,7 +29,7 @@ func HashCheckMiddleware(cfg config.Hash) func(next http.Handler) http.Handler {
 						http.Error(w, "empty body", http.StatusInternalServerError)
 						return
 					}
-					if VerifySign(b, expectedHash, []byte(cfg.Key)) {
+					if !VerifySign(b, expectedHash, []byte(cfg.Key)) {
 						http.Error(w, "verify hash fail", http.StatusBadRequest)
 						return
 					}

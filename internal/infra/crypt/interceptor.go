@@ -9,9 +9,9 @@ import (
 	"github.com/kosalnik/metrics/internal/config"
 )
 
-func VerifyHashInterceptor(cfg config.Hash) *AddHash {
+func VerifyHashInterceptor(cfg config.Hash, transport http.RoundTripper) *AddHash {
 	return &AddHash{
-		core: http.DefaultTransport,
+		core: transport,
 		key:  []byte(cfg.Key),
 	}
 }
@@ -22,16 +22,19 @@ type AddHash struct {
 }
 
 func (a *AddHash) RoundTrip(request *http.Request) (*http.Response, error) {
-	if len(a.key) == 0 {
+	if len(a.key) == 0 || request.Body == nil {
 		return a.core.RoundTrip(request)
 	}
-
-	defer request.Body.Close()
 
 	b, err := io.ReadAll(request.Body)
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if request.Body != nil {
+			request.Body.Close()
+		}
+	}()
 
 	h := GetSign(b, a.key)
 	req := request.Clone(context.Background())
