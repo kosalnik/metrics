@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/kosalnik/metrics/internal/infra/crypt"
 	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/sirupsen/logrus"
 
@@ -21,7 +22,7 @@ type SenderRest struct {
 
 func NewSenderRest(config *config.Agent) Sender {
 	c := http.Client{
-		Transport: &AddHash{core: http.DefaultTransport},
+		Transport: crypt.VerifyHashInterceptor(config.Hash),
 	}
 	return &SenderRest{
 		client: &c,

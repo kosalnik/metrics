@@ -11,6 +11,7 @@ import (
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
 	"github.com/kosalnik/metrics/internal/infra/backup"
+	"github.com/kosalnik/metrics/internal/infra/crypt"
 	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/infra/memstorage"
 	"github.com/kosalnik/metrics/internal/infra/postgres"
@@ -92,7 +93,7 @@ func (app *App) GetRouter() chi.Router {
 		//gzipMiddleware,
 		middleware.Logger,
 		middleware.Recoverer,
-		HashCheckMiddleware(app.config.Hash),
+		crypt.HashCheckMiddleware(app.config.Hash),
 	)
 	requireJSONMw := middleware.AllowContentType("application/json")
 	r.Route("/", func(r chi.Router) {
