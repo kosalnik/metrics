@@ -25,7 +25,8 @@ func NewClient(ctx context.Context, config config.Agent) *Client {
 		config: &config,
 		sender: NewSenderPool(
 			ctx,
-			&config,
+			NewSenderRest(&config),
+			int(config.RateLimit),
 		),
 	}
 }

@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/models"
 )
@@ -15,13 +14,13 @@ type SenderPool struct {
 
 var _ Sender = &SenderPool{}
 
-func NewSenderPool(ctx context.Context, cfg *config.Agent) *SenderPool {
+func NewSenderPool(ctx context.Context, client Sender, num int) *SenderPool {
 	p := &SenderPool{
-		client: NewSenderRest(cfg),
+		client: client,
 		jobs:   make(chan func()),
 	}
 
-	for w := 1; w <= int(cfg.RateLimit); w++ {
+	for w := 1; w <= int(num); w++ {
 		logger.Logger.Infof("Start worker %d", w)
 		go p.worker(p.jobs)
 	}
