@@ -1,11 +1,19 @@
 package metric
 
-import "runtime"
+import (
+	"context"
+	"runtime"
 
-func GetMetrics() map[string]float64 {
+	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/mem"
+)
+
+func GetMetrics(ctx context.Context) (map[string]float64, error) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	return map[string]float64{
+
+	r := map[string]float64{
 		"Alloc":         float64(m.Alloc),
 		"BuckHashSys":   float64(m.BuckHashSys),
 		"Frees":         float64(m.Frees),
@@ -34,4 +42,19 @@ func GetMetrics() map[string]float64 {
 		"Sys":           float64(m.Sys),
 		"TotalAlloc":    float64(m.TotalAlloc),
 	}
+
+	if cpuUsage, err := cpu.PercentWithContext(ctx, 0, false); err == nil {
+		r["CPUutilization1"] = float64(cpuUsage[0])
+	} else {
+		logger.Logger.WithError(err).Error("get cpu usage fail")
+	}
+
+	if memUsage, err := mem.VirtualMemory(); err == nil {
+		r["TotalMemory"] = float64(memUsage.Total)
+		r["FreeMemory"] = float64(memUsage.Free)
+	} else {
+		logger.Logger.WithError(err).Error("get memory usage fail")
+	}
+
+	return r, nil
 }

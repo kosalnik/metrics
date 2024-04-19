@@ -14,6 +14,7 @@ func main() {
 	if err := logger.InitLogger(cfg.Agent.Logger); err != nil {
 		panic(err.Error())
 	}
-	app := client.NewClient(cfg.Agent)
-	app.Run(context.Background())
+	ctx := context.Background()
+	app := client.NewClient(ctx, cfg.Agent)
+	app.Run(ctx)
 }

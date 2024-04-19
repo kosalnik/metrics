@@ -10,6 +10,7 @@ type Agent struct {
 	CollectorAddress string // Адрес сервера, куда клиент будет посылать метрики
 	PollInterval     int64  // Время между сборами метрик
 	ReportInterval   int64  // Время между отправками метрик на сервер
+	RateLimit        int64  //
 	Hash             Hash
 }
 
@@ -48,6 +49,7 @@ func NewConfig() *Config {
 			PollInterval:     2,
 			ReportInterval:   10,
 			Hash:             Hash{Key: ""},
+			RateLimit:        1,
 		},
 		Server: Server{
 			Logger:  Logger{Level: "info"},
