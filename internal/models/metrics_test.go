@@ -6,27 +6,23 @@ func TestMetrics_String(t *testing.T) {
 	type fields struct {
 		ID    string
 		MType MType
-		Delta *int64
-		Value *float64
+		Delta int64
+		Value float64
 	}
-	var tenInt int64 = 10
-	var tenFloat float64 = 10
-	var pi = 3.1415
-
 	tests := map[string]struct {
 		fields fields
 		want   string
 	}{
 		"counter": {
-			fields: fields{ID: "zxc", MType: "counter", Delta: &tenInt},
+			fields: fields{ID: "zxc", MType: "counter", Delta: 10},
 			want:   "zxc = 10",
 		},
 		"gauge ceil": {
-			fields: fields{ID: "zxc", MType: "gauge", Value: &tenFloat},
+			fields: fields{ID: "zxc", MType: "gauge", Value: 10},
 			want:   "zxc = 10",
 		},
 		"gauge float": {
-			fields: fields{ID: "zxc", MType: "gauge", Value: &pi},
+			fields: fields{ID: "zxc", MType: "gauge", Value: 3.1415},
 			want:   "zxc = 3.1415",
 		},
 	}

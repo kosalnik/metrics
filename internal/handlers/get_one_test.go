@@ -1,16 +1,17 @@
 package handlers_test
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/kosalnik/metrics/internal/handlers"
+	"github.com/kosalnik/metrics/internal/infra/memstorage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/kosalnik/metrics/internal/application/server"
-	"github.com/kosalnik/metrics/internal/config"
 )
 
 func TestGetHandler(t *testing.T) {
@@ -27,11 +28,16 @@ func TestGetHandler(t *testing.T) {
 		{"invalid metric type", "/value/unk/u3", "Not Found\n", http.StatusNotFound},
 	}
 
-	app := server.NewApp(config.Server{})
-	s := app.Storage
-	r := app.GetRouter()
-	s.IncCounter("c1", 5)
-	s.SetGauge("g1", 13.1)
+	var err error
+	s := memstorage.NewMemStorage()
+	h := handlers.NewGetHandler(s)
+	_, err = s.IncCounter(context.Background(), "c1", 5)
+	assert.NoError(t, err)
+	_, err = s.SetGauge(context.Background(), "g1", 13.1)
+	assert.NoError(t, err)
+
+	r := chi.NewRouter()
+	r.Get("/value/{type}/{name}", h)
 	srv := httptest.NewServer(r)
 
 	for _, tt := range testCases {

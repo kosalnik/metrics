@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/kosalnik/metrics/internal/application/client"
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/logger"
@@ -13,5 +15,5 @@ func main() {
 		panic(err.Error())
 	}
 	app := client.NewClient(cfg.Agent)
-	app.Run()
+	app.Run(context.Background())
 }

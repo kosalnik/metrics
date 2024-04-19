@@ -1,18 +1,19 @@
 package server
 
 import (
-	"errors"
+	"context"
 	"net/http"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/sirupsen/logrus"
-
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
+	"github.com/kosalnik/metrics/internal/infra/backup"
+	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/infra/memstorage"
+	"github.com/kosalnik/metrics/internal/infra/postgres"
 	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
@@ -22,32 +23,65 @@ type App struct {
 }
 
 func NewApp(cfg config.Server) *App {
-	storeInterval := time.Second * time.Duration(cfg.StoreInterval)
+
 	return &App{
-		Storage: storage.NewStorage(&storeInterval, &cfg.FileStoragePath),
-		config:  cfg,
+		config: cfg,
 	}
 }
 
-func (app *App) Run() error {
-	if err := app.initBackup(); err != nil {
+func (app *App) Run(ctx context.Context) error {
+	if err := app.initStorage(ctx); err != nil {
 		return err
 	}
-	logrus.Info("Listen " + app.config.Address)
+	if err := app.initBackup(ctx); err != nil {
+		return err
+	}
+	defer func() {
+		if err := app.Storage.Close(); err != nil {
+			logger.Logger.WithError(err).Errorf("unable to close storage")
+		}
+	}()
+
+	logger.Logger.Info("Listen " + app.config.Address)
+
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
 }
 
-func (app *App) initBackup() error {
-	if app.config.FileStoragePath == "" {
-		return nil
+func (app *App) initStorage(ctx context.Context) error {
+	if app.config.DB.DSN == "" {
+		app.Storage = memstorage.NewMemStorage()
+	} else {
+		return app.initDB(ctx)
 	}
-	if app.config.Restore {
-		if err := app.Storage.Recover(app.config.FileStoragePath); err != nil {
-			if errors.Is(os.ErrNotExist, err) {
-				return err
-			}
+
+	return nil
+}
+
+func (app *App) initDB(ctx context.Context) error {
+	db, err := postgres.NewDB(ctx, app.config.DB)
+	if err != nil {
+		return err
+	}
+	app.Storage = db
+
+	return nil
+}
+
+func (app *App) initBackup(ctx context.Context) error {
+	var err error
+	bm, err := backup.NewBackupManager(app.Storage, app.config.Backup)
+	if err != nil {
+		return err
+	}
+	if err = bm.Recover(ctx); err != nil {
+		if !os.IsNotExist(err) {
+			return err
 		}
 	}
+	if err = bm.ScheduleBackup(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -62,6 +96,7 @@ func (app *App) GetRouter() chi.Router {
 	requireJSONMw := middleware.AllowContentType("application/json")
 	r.Route("/", func(r chi.Router) {
 		r.With(requireJSONMw).Get("/", handlers.NewGetAllHandler(app.Storage))
+		r.With(requireJSONMw).Post("/updates/", handlers.NewUpdateBatchHandler(app.Storage))
 		r.Route("/update", func(r chi.Router) {
 			r.With(requireJSONMw).Post("/", handlers.NewRestUpdateHandler(app.Storage))
 			r.Post("/{type}/{name}/{value}", handlers.NewUpdateHandler(app.Storage))
@@ -70,35 +105,7 @@ func (app *App) GetRouter() chi.Router {
 			r.With(requireJSONMw).Post("/", handlers.NewRestGetHandler(app.Storage))
 			r.Get("/{type}/{name}", handlers.NewGetHandler(app.Storage))
 		})
+		r.Get("/ping", handlers.NewPingHandler(app.Storage))
 	})
 	return r
-}
-
-func gzipMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ow := w
-
-		acceptEncoding := r.Header.Get("Accept-Encoding")
-		supportsGzip := strings.Contains(acceptEncoding, "gzip")
-		if supportsGzip {
-			cw := newCompressWriter(w)
-			ow = cw
-			defer cw.Close()
-		}
-
-		contentEncoding := r.Header.Get("Content-Encoding")
-		sendsGzip := strings.Contains(contentEncoding, "gzip")
-		if sendsGzip {
-			// оборачиваем тело запроса в io.Reader с поддержкой декомпрессии
-			cr, err := newCompressReader(r.Body)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			r.Body = cr
-			defer cr.Close()
-		}
-
-		next.ServeHTTP(ow, r)
-	})
 }

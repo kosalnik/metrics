@@ -7,8 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/sirupsen/logrus"
-
+	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/infra/storage"
 	"github.com/kosalnik/metrics/internal/models"
 )
@@ -17,7 +16,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		data, err := io.ReadAll(req.Body)
-		logrus.WithField("body", string(data)).Info("Handle Get")
+		logger.Logger.WithField("body", string(data)).Info("Handle Get")
 		if err != nil {
 			http.Error(w, `"Wrong data"`, http.StatusBadRequest)
 			return
@@ -29,27 +28,33 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 		}
 		switch m.MType {
 		case models.MGauge:
-			v, ok := s.GetGauge(m.ID)
-			if !ok {
+			v, err := s.GetGauge(req.Context(), m.ID)
+			if err != nil {
+				http.Error(w, `"fail get gauge"`, http.StatusInternalServerError)
+				return
+			}
+			if v == nil {
 				http.NotFound(w, req)
 				return
 			}
-			m.Value = &v
-			if out, err := json.Marshal(m); err != nil {
+			if out, err := json.Marshal(v); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)
 			} else {
-				logrus.WithField("body", string(out)).Info("Handle Get Result")
+				logger.Logger.WithField("body", string(out)).Info("Handle Get Result")
 				_, _ = w.Write(out)
 			}
 			return
 		case models.MCounter:
-			v, ok := s.GetCounter(m.ID)
-			if !ok {
+			v, err := s.GetCounter(req.Context(), m.ID)
+			if err != nil {
+				http.Error(w, `"fail get counter"`, http.StatusInternalServerError)
+				return
+			}
+			if v == nil {
 				http.NotFound(w, req)
 				return
 			}
-			m.Delta = &v
-			if out, err := json.Marshal(m); err != nil {
+			if out, err := json.Marshal(v); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)
 			} else {
 				_, _ = w.Write(out)
@@ -66,23 +71,31 @@ func NewGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Re
 		mName := chi.URLParam(req, "name")
 		switch mType {
 		case models.MGauge:
-			v, ok := s.GetGauge(mName)
-			if !ok {
+			v, err := s.GetGauge(req.Context(), mName)
+			if err != nil {
+				http.Error(w, `"fail get gauge"`, http.StatusInternalServerError)
+				return
+			}
+			if v == nil {
 				http.NotFound(w, req)
 				return
 			}
-			res := fmt.Sprintf("%v", v)
+			res := fmt.Sprintf("%v", v.Value)
 			if _, err := w.Write([]byte(res)); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			return
 		case models.MCounter:
-			v, ok := s.GetCounter(mName)
-			if !ok {
+			v, err := s.GetCounter(req.Context(), mName)
+			if err != nil {
+				http.Error(w, `"fail get counter"`, http.StatusInternalServerError)
+				return
+			}
+			if v == nil {
 				http.NotFound(w, req)
 				return
 			}
-			res := fmt.Sprintf("%v", v)
+			res := fmt.Sprintf("%v", v.Delta)
 			if _, err := w.Write([]byte(res)); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}

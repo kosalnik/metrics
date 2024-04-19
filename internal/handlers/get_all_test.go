@@ -1,25 +1,30 @@
 package handlers_test
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/kosalnik/metrics/internal/handlers"
+	"github.com/kosalnik/metrics/internal/infra/memstorage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/kosalnik/metrics/internal/application/server"
-	"github.com/kosalnik/metrics/internal/config"
 )
 
 func TestGetAllHandler(t *testing.T) {
-	app := server.NewApp(config.Server{})
-	s := app.Storage
-	r := app.GetRouter()
-	s.IncCounter("c1", 5)
-	s.SetGauge("g1", 13.1)
-	srv := httptest.NewServer(r)
+	var err error
+	s := memstorage.NewMemStorage()
+	h := handlers.NewGetAllHandler(s)
+	_, err = s.IncCounter(context.Background(), "c1", 5)
+	assert.NoError(t, err)
+	_, err = s.SetGauge(context.Background(), "g1", 13.1)
+	assert.NoError(t, err)
+
+	m := http.NewServeMux()
+	m.HandleFunc("/", h)
+	srv := httptest.NewServer(m)
 
 	res, err := srv.Client().Get(srv.URL)
 	require.NoError(t, err)

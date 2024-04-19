@@ -1,9 +1,13 @@
-package storage
+package memstorage
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
+	"github.com/kosalnik/metrics/internal/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMemStorage_GetCounter(t *testing.T) {
@@ -15,8 +19,7 @@ func TestMemStorage_GetCounter(t *testing.T) {
 		name         string
 		storageState storageState
 		metricName   string
-		want         int64
-		wantOk       bool
+		want         *models.Metrics
 	}{
 		{
 			name: "empty storage",
@@ -25,8 +28,7 @@ func TestMemStorage_GetCounter(t *testing.T) {
 				counter: map[string]int64{},
 			},
 			metricName: "testCounter",
-			want:       0,
-			wantOk:     false,
+			want:       nil,
 		},
 		{
 			name: "no gauge, counter exists",
@@ -37,8 +39,7 @@ func TestMemStorage_GetCounter(t *testing.T) {
 				},
 			},
 			metricName: "testCounter",
-			want:       3,
-			wantOk:     true,
+			want:       &models.Metrics{ID: "testCounter", MType: models.MCounter, Delta: 3},
 		},
 		{
 			name: "gauge exists, no counter",
@@ -49,8 +50,7 @@ func TestMemStorage_GetCounter(t *testing.T) {
 				counter: map[string]int64{},
 			},
 			metricName: "testCounter",
-			want:       0,
-			wantOk:     false,
+			want:       nil,
 		},
 	}
 	for _, tt := range tests {
@@ -59,8 +59,8 @@ func TestMemStorage_GetCounter(t *testing.T) {
 				gauge:   tt.storageState.gauge,
 				counter: tt.storageState.counter,
 			}
-			got, ok := m.GetCounter(tt.metricName)
-			assert.Equal(t, tt.wantOk, ok)
+			got, err := m.GetCounter(context.Background(), tt.metricName)
+			assert.NoError(t, err)
 			assert.Equal(t, got, tt.want)
 		})
 	}
@@ -75,8 +75,7 @@ func TestMemStorage_GetGauge(t *testing.T) {
 		name         string
 		storageState storageState
 		metricName   string
-		want         float64
-		wantOk       bool
+		want         *models.Metrics
 	}{
 		{
 			name: "empty storage",
@@ -85,8 +84,7 @@ func TestMemStorage_GetGauge(t *testing.T) {
 				counter: map[string]int64{},
 			},
 			metricName: "testCounter",
-			want:       0,
-			wantOk:     false,
+			want:       nil,
 		},
 		{
 			name: "no gauge, counter exists",
@@ -97,8 +95,7 @@ func TestMemStorage_GetGauge(t *testing.T) {
 				},
 			},
 			metricName: "testCounter",
-			want:       0,
-			wantOk:     false,
+			want:       nil,
 		},
 		{
 			name: "gauge exists, no counter",
@@ -109,8 +106,7 @@ func TestMemStorage_GetGauge(t *testing.T) {
 				counter: map[string]int64{},
 			},
 			metricName: "testCounter",
-			want:       3,
-			wantOk:     true,
+			want:       &models.Metrics{ID: "testCounter", MType: models.MGauge, Value: 3},
 		},
 	}
 	for _, tt := range tests {
@@ -119,9 +115,9 @@ func TestMemStorage_GetGauge(t *testing.T) {
 				gauge:   tt.storageState.gauge,
 				counter: tt.storageState.counter,
 			}
-			got, ok := m.GetGauge(tt.metricName)
-			assert.Equal(t, tt.wantOk, ok)
-			assert.Equal(t, tt.want, got)
+			got, err := m.GetGauge(context.Background(), tt.metricName)
+			assert.NoError(t, err)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -139,7 +135,7 @@ func TestMemStorage_IncCounter(t *testing.T) {
 		name         string
 		storageState storageState
 		metric       metric
-		want         int64
+		want         *models.Metrics
 	}{
 		{
 			name: "empty storage",
@@ -148,7 +144,7 @@ func TestMemStorage_IncCounter(t *testing.T) {
 				counter: map[string]int64{},
 			},
 			metric: metric{name: "test", value: 3},
-			want:   3,
+			want:   &models.Metrics{ID: "test", MType: models.MCounter, Delta: 3},
 		},
 		{
 			name: "no gauge, counter exists",
@@ -159,33 +155,87 @@ func TestMemStorage_IncCounter(t *testing.T) {
 				},
 			},
 			metric: metric{name: "test", value: 3},
-			want:   5,
+			want:   &models.Metrics{ID: "test", MType: models.MCounter, Delta: 5},
 		},
 	}
+	ctx := context.Background()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &MemStorage{
 				gauge:   tt.storageState.gauge,
 				counter: tt.storageState.counter,
 			}
-			m.IncCounter(tt.metric.name, tt.metric.value)
-			actual, ok := m.GetCounter(tt.metric.name)
-			assert.True(t, ok)
+			r, err := m.IncCounter(ctx, tt.metric.name, tt.metric.value)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, r)
+			actual, err := m.GetCounter(ctx, tt.metric.name)
+			assert.NoError(t, err)
 			assert.Equal(t, tt.want, actual)
 		})
 	}
 }
 
 func TestMemStorage_SetGauge(t *testing.T) {
-	m := NewStorage(nil, nil)
+	m := NewMemStorage()
 	assert.NotNil(t, m)
-	m.SetGauge("test", 1)
-	v, ok := m.GetGauge("test")
-	assert.True(t, ok)
-	assert.Equal(t, 1.0, v)
+	ctx := context.Background()
+	want := &models.Metrics{ID: "test", MType: models.MGauge, Value: 1.0}
+	r, err := m.SetGauge(ctx, "test", 1)
+	require.NoError(t, err)
+	require.Equal(t, want, r)
+	v, err := m.GetGauge(ctx, "test")
+	assert.NoError(t, err)
+	assert.Equal(t, want, v)
 }
 
 func TestNewStorage(t *testing.T) {
-	m := NewStorage(nil, nil)
+	m := NewMemStorage()
 	assert.NotNil(t, m)
+}
+
+func TestMemStorage_UpsertAll(t *testing.T) {
+	tests := []struct {
+		name        string
+		list        []models.Metrics
+		wantGauge   map[string]float64
+		wantCounter map[string]int64
+	}{
+		{
+			name: "only counters",
+			list: []models.Metrics{
+				{ID: "asd", MType: models.MCounter, Delta: 2},
+				{ID: "qwe", MType: models.MCounter, Delta: 1},
+			},
+			wantCounter: map[string]int64{"asd": 2, "qwe": 1},
+			wantGauge:   map[string]float64{},
+		},
+		{
+			name: "only float",
+			list: []models.Metrics{
+				{ID: "asd", MType: models.MGauge, Value: 3.14},
+				{ID: "qwe", MType: models.MGauge, Value: 6.28},
+			},
+			wantCounter: map[string]int64{},
+			wantGauge:   map[string]float64{"asd": 3.14, "qwe": 6.28},
+		},
+		{
+			name: "counter and gauge",
+			list: []models.Metrics{
+				{ID: "asd", MType: models.MCounter, Delta: 1},
+				{ID: "asd", MType: models.MGauge, Value: 3.14},
+				{ID: "qwe", MType: models.MCounter, Delta: 2},
+				{ID: "qwe", MType: models.MGauge, Value: 6.28},
+			},
+			wantCounter: map[string]int64{"asd": 1, "qwe": 2},
+			wantGauge:   map[string]float64{"asd": 3.14, "qwe": 6.28},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := NewMemStorage()
+			require.NoError(t, m.UpsertAll(context.Background(), tt.list), fmt.Sprintf("UpsertAll(%v)", tt.list))
+			require.Equal(t, tt.wantGauge, m.gauge)
+			require.Equal(t, tt.wantCounter, m.counter)
+		})
+	}
 }
