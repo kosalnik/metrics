@@ -1,13 +1,18 @@
 package metric
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetMetrics(t *testing.T) {
 	want := []string{
+		"CPUutilization1",
+		"TotalMemory",
+		"FreeMemory",
 		"Alloc",
 		"BuckHashSys",
 		"Frees",
@@ -36,7 +41,8 @@ func TestGetMetrics(t *testing.T) {
 		"Sys",
 		"TotalAlloc",
 	}
-	got := GetMetrics()
+	got, err := GetMetrics(context.Background())
+	require.NoError(t, err)
 	for _, k := range want {
 		_, ok := got[k]
 		assert.True(t, ok)

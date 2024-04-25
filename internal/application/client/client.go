@@ -20,11 +20,13 @@ type Client struct {
 	pollCount int64
 }
 
-func NewClient(config config.Agent) *Client {
+func NewClient(ctx context.Context, config config.Agent) *Client {
 	return &Client{
 		config: &config,
-		sender: NewSenderRest(
-			&config,
+		sender: NewSenderPool(
+			ctx,
+			NewSenderRest(&config),
+			int(config.RateLimit),
 		),
 	}
 }
@@ -85,15 +87,23 @@ func (c *Client) poll(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-tick.C:
-			c.pollMetrics()
+			if err := c.pollMetrics(ctx); err != nil {
+				logger.Logger.WithError(err).Errorf("poll error")
+			}
 		}
 	}
 }
 
-func (c *Client) pollMetrics() {
+func (c *Client) pollMetrics(ctx context.Context) error {
+	var err error
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.gauge = metric.GetMetrics()
+	c.gauge, err = metric.GetMetrics(ctx)
+	if err != nil {
+		return err
+	}
 	c.pollCount = c.pollCount + 1
 	logger.Logger.WithField("count", c.pollCount).Debug("PollCount")
+
+	return nil
 }

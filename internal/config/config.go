@@ -6,21 +6,25 @@ type Config struct {
 }
 
 type Agent struct {
-	Logger Logger
-	// Адрес сервера, куда клиент будет посылать метрики
-	CollectorAddress string
-	// Время между сборами метрик
-	PollInterval int64
-	// Время между отправками метрик на сервер
-	ReportInterval int64
+	Logger           Logger
+	CollectorAddress string // Адрес сервера, куда клиент будет посылать метрики
+	PollInterval     int64  // Время между сборами метрик
+	ReportInterval   int64  // Время между отправками метрик на сервер
+	RateLimit        int64  //
+	Hash             Hash
 }
 
 type Server struct {
 	Logger Logger
-	// ip:host, которые слушает сервер
-	Address string
+
+	Address string // ip:host, которые слушает сервер
 	Backup  Backup
 	DB      DB
+	Hash    Hash
+}
+
+type Hash struct {
+	Key string // HASH SHA256 Key
 }
 
 type Backup struct {
@@ -44,11 +48,14 @@ func NewConfig() *Config {
 			CollectorAddress: "127.0.0.1:8080",
 			PollInterval:     2,
 			ReportInterval:   10,
+			Hash:             Hash{Key: ""},
+			RateLimit:        1,
 		},
 		Server: Server{
 			Logger:  Logger{Level: "info"},
 			Address: ":8080",
 			Backup:  Backup{},
+			Hash:    Hash{Key: ""},
 		},
 	}
 }

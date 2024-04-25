@@ -16,6 +16,7 @@ func TestNewConfig(t *testing.T) {
 				CollectorAddress: "127.0.0.1:8080",
 				PollInterval:     2,
 				ReportInterval:   10,
+				RateLimit:        1,
 			},
 			Server: Server{
 				Logger:  Logger{Level: "info"},
