@@ -17,6 +17,12 @@ func parseFlags(c *config.Server) {
 	flag.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")
 	flag.Parse()
 	var err error
+	if v := os.Getenv("PROFILING"); v != "" {
+		c.Profiling.Enabled, err = strconv.ParseBool(v)
+		if err != nil {
+			panic("PROFILING should be bool, got: " + v)
+		}
+	}
 	if v := os.Getenv("ADDRESS"); v != "" {
 		c.Address = v
 	}

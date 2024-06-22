@@ -39,10 +39,10 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 				return
 			}
 		} else {
-			var t []string
-			for _, v := range items {
+			t := make([]string, len(items))
+			for i, v := range items {
 				logger.Logger.WithField("v", v).Info("asdf")
-				t = append(t, v.String())
+				t[i] = v.String()
 			}
 			sort.Strings(t)
 			data = []byte(strings.Join(t, "\n"))

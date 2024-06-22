@@ -239,3 +239,17 @@ func TestMemStorage_UpsertAll(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkMemStorage_UpsertAll(t *testing.B) {
+
+	ctx := context.Background()
+	m := NewMemStorage()
+	for i := 0; i < t.N; i++ {
+		require.NoError(t, m.UpsertAll(ctx, []models.Metrics{
+			{ID: fmt.Sprintf("asd%d", i), MType: models.MCounter, Delta: int64(i)},
+			{ID: fmt.Sprintf("asd%d", i), MType: models.MGauge, Value: 3.14},
+			{ID: fmt.Sprintf("qwe%d", i), MType: models.MCounter, Delta: int64(i + 1)},
+			{ID: fmt.Sprintf("qwe%d", i), MType: models.MGauge, Value: 6.28},
+		}))
+	}
+}
