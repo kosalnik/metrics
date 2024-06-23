@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kosalnik/metrics/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kosalnik/metrics/internal/models"
 )
 
 func TestMemStorage_GetCounter(t *testing.T) {

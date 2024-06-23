@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/models"
-	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/config"
 )

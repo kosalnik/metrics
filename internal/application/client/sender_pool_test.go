@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/kosalnik/metrics/internal/application/client"
 	"github.com/kosalnik/metrics/internal/application/client/mock"
 	"github.com/kosalnik/metrics/internal/models"
-	"github.com/stretchr/testify/require"
 )
 
 func TestSenderPool_SendBatch(t *testing.T) {

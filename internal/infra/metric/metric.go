@@ -4,9 +4,10 @@ import (
 	"context"
 	"runtime"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/mem"
+
+	"github.com/kosalnik/metrics/internal/infra/logger"
 )
 
 func GetMetrics(ctx context.Context) (map[string]float64, error) {

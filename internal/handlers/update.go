@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+
 	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/infra/storage"
 	"github.com/kosalnik/metrics/internal/models"

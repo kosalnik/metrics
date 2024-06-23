@@ -6,9 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/crypt"
-	"github.com/stretchr/testify/require"
 )
 
 func TestVerifyHashInterceptor(t *testing.T) {

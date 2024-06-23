@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/kosalnik/metrics/internal/infra/storage/mock"
 	"github.com/kosalnik/metrics/internal/models"
-	"github.com/stretchr/testify/require"
 )
 
 func TestDump_Store(t *testing.T) {

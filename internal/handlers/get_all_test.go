@@ -8,10 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kosalnik/metrics/internal/handlers"
-	"github.com/kosalnik/metrics/internal/infra/memstorage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kosalnik/metrics/internal/handlers"
+	"github.com/kosalnik/metrics/internal/infra/memstorage"
 )
 
 func TestGetAllHandler(t *testing.T) {

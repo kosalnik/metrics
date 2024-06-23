@@ -5,9 +5,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/infra/storage"
-	"github.com/sirupsen/logrus"
 
 	"github.com/kosalnik/metrics/internal/models"
 )

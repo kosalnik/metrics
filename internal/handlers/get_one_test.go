@@ -8,10 +8,11 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/kosalnik/metrics/internal/handlers"
-	"github.com/kosalnik/metrics/internal/infra/memstorage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kosalnik/metrics/internal/handlers"
+	"github.com/kosalnik/metrics/internal/infra/memstorage"
 )
 
 func TestGetHandler(t *testing.T) {
