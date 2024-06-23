@@ -8,22 +8,22 @@ import (
 	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
-type Dumper interface {
-	Store(ctx context.Context) error
-}
-
+// Dump - Тип выполняет сохранение содержимого хранилища на диск.
 type Dump struct {
-	storage storage.Storage
+	storage storage.Dumper
 	path    string
 }
 
-func NewDump(storage storage.Storage, path string) *Dump {
+// NewDump возвращает тип Dump.
+// На вход ожидаются Storage и абсолютный путь до файла, в который нужно сохранять бекап
+func NewDump(storage storage.Dumper, path string) *Dump {
 	return &Dump{
 		storage: storage,
 		path:    path,
 	}
 }
 
+// Store - вызовом этого метода данные из Storage сохраняются на диск
 func (m *Dump) Store(ctx context.Context) error {
 	if m.path == "" {
 		return nil

@@ -9,22 +9,21 @@ import (
 	"github.com/kosalnik/metrics/internal/infra/storage"
 )
 
-type Recoverer interface {
-	Recover(ctx context.Context) error
-}
-
 type Recover struct {
-	storage storage.Storage
+	storage storage.Recoverer
 	path    string
 }
 
-func NewRecover(storage storage.Storage, path string) *Recover {
+// NewRecover - создаст инстанс типа Recover, которую можно использовать для восстановления Storage из бекапа.
+// На вход подаётся объект реализующий интерфейс storage.Recoverer и путь к файлу из которого нужно восстанавливать.
+func NewRecover(storage storage.Recoverer, path string) *Recover {
 	return &Recover{
 		storage: storage,
 		path:    path,
 	}
 }
 
+// Recover - Восстановить Storage из бекапа.
 func (m *Recover) Recover(ctx context.Context) error {
 	if m == nil || m.path == "" {
 		logger.Logger.Info("Recover skipped. No Path or Disabled")

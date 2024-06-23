@@ -1,3 +1,4 @@
+// This is metrics collector server.
 package main
 
 import (
