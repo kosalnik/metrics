@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/models"
 )
 
@@ -110,7 +109,7 @@ func Example() {
 	}
 
 	s := &MyStorage{}
-	b, err := NewBackupManager(s, config.Backup{
+	b, err := NewBackupManager(s, Config{
 		StoreInterval:   1,
 		FileStoragePath: fname,
 		Restore:         true,
@@ -136,9 +135,8 @@ func Example() {
 
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second))
 	defer cancel()
-	if err := b.ScheduleBackup(ctx); err != nil {
-		panic(err)
-	}
+
+	go b.BackupLoop(ctx)
 
 	s.s = []models.Metrics{
 		{ID: "pi", MType: models.MGauge, Value: 3.14},

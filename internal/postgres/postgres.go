@@ -1,3 +1,4 @@
+// Package postgres содержит реализацию репозиториев к БД postgres.
 package postgres
 
 import (
@@ -9,7 +10,7 @@ import (
 	"time"
 
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/logger"
 	"github.com/kosalnik/metrics/internal/models"
 )
 

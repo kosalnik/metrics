@@ -8,13 +8,13 @@ import (
 
 	"github.com/kosalnik/metrics/internal/application/client"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/logger"
 )
 
 func main() {
 	cfg := config.NewConfig()
 	parseFlags(&cfg.Agent)
-	if err := logger.InitLogger(cfg.Agent.Logger); err != nil {
+	if err := logger.InitLogger(cfg.Agent.Logger.Level); err != nil {
 		panic(err.Error())
 	}
 	if cfg.Agent.Profiling.Enabled {

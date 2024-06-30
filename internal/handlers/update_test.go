@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/kosalnik/metrics/internal/handlers"
-	"github.com/kosalnik/metrics/internal/infra/memstorage"
+	"github.com/kosalnik/metrics/internal/memstorage"
 
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 func TestUpdateHandler_Handle(t *testing.T) {

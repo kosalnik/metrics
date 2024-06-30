@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/logger"
 	"github.com/kosalnik/metrics/internal/models"
 )
 

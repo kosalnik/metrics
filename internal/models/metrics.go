@@ -1,3 +1,4 @@
+// Package models содержит определения моделей, используемых приложением.
 package models
 
 import (

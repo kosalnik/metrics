@@ -1,3 +1,4 @@
+// Package memstorage implements storage in memory.
 package memstorage
 
 import (
@@ -7,8 +8,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/storage"
 
 	"github.com/kosalnik/metrics/internal/models"
 )
@@ -18,11 +19,6 @@ type MemStorage struct {
 	gauge     map[string]float64
 	counter   map[string]int64
 	updatedAt time.Time
-}
-
-type MemStorageItem struct {
-	class string
-	index int
 }
 
 func NewMemStorage() *MemStorage {
