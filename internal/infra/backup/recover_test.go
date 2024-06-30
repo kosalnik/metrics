@@ -6,9 +6,10 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/kosalnik/metrics/internal/infra/backup"
 	"github.com/kosalnik/metrics/internal/infra/storage/mock"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRecover(t *testing.T) {

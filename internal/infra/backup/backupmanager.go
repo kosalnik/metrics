@@ -10,19 +10,36 @@ import (
 	"github.com/kosalnik/metrics/internal/models"
 )
 
+type Dumper interface {
+	Store(ctx context.Context) error
+}
+
+type Recoverer interface {
+	Recover(ctx context.Context) error
+}
+
+type Storage interface {
+	storage.Dumper
+	storage.Recoverer
+	storage.UpdateAwarer
+}
+
 type Backup struct {
 	Data []models.Metrics
 }
 
+// BackupManager - структура управляющая бекапом и восстановлением из бекапа.
 type BackupManager struct {
 	dump           Dumper
 	recover        Recoverer
-	storage        storage.Storage
+	storage        Storage
 	backupInterval time.Duration
 	lastBackup     time.Time
 }
 
-func NewBackupManager(s storage.Storage, cfg config.Backup) (*BackupManager, error) {
+// NewBackupManager - создаёт BackupManager с конфигурацией config.Backup.
+// На вход принимает хранилище с интерфейсом Storage и настройки бекапа.
+func NewBackupManager(s Storage, cfg config.Backup) (*BackupManager, error) {
 	if cfg.FileStoragePath == "" {
 		return nil, nil
 	}
@@ -46,6 +63,8 @@ func NewBackupManager(s storage.Storage, cfg config.Backup) (*BackupManager, err
 	}, nil
 }
 
+// ScheduleBackup - запустить автоматический бекап по расписанию.
+// Будет скидывать бекап на диск через равные промежутки времени.
 func (m *BackupManager) ScheduleBackup(ctx context.Context) error {
 	if m == nil || m.dump == nil || m.backupInterval == 0 {
 		logger.Logger.Info("schedule backup skipped")
@@ -80,6 +99,7 @@ func (m *BackupManager) backupLoop(ctx context.Context) {
 	}
 }
 
+// Recover - восстановить данные из бекапа.
 func (m *BackupManager) Recover(ctx context.Context) error {
 	if m == nil || m.recover == nil {
 		logger.Logger.Info("recover skipped")

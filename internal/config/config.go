@@ -6,6 +6,7 @@ type Config struct {
 }
 
 type Agent struct {
+	Profiling        Profiling
 	Logger           Logger
 	CollectorAddress string // Адрес сервера, куда клиент будет посылать метрики
 	PollInterval     int64  // Время между сборами метрик
@@ -15,12 +16,16 @@ type Agent struct {
 }
 
 type Server struct {
-	Logger Logger
+	Profiling Profiling
+	Logger    Logger
+	Address   string // ip:host, которые слушает сервер
+	Backup    Backup
+	DB        DB
+	Hash      Hash
+}
 
-	Address string // ip:host, которые слушает сервер
-	Backup  Backup
-	DB      DB
-	Hash    Hash
+type Profiling struct {
+	Enabled bool
 }
 
 type Hash struct {
@@ -44,6 +49,7 @@ type Logger struct {
 func NewConfig() *Config {
 	return &Config{
 		Agent: Agent{
+			Profiling:        Profiling{},
 			Logger:           Logger{Level: "info"},
 			CollectorAddress: "127.0.0.1:8080",
 			PollInterval:     2,
@@ -52,10 +58,11 @@ func NewConfig() *Config {
 			RateLimit:        1,
 		},
 		Server: Server{
-			Logger:  Logger{Level: "info"},
-			Address: ":8080",
-			Backup:  Backup{},
-			Hash:    Hash{Key: ""},
+			Profiling: Profiling{},
+			Logger:    Logger{Level: "info"},
+			Address:   ":8080",
+			Backup:    Backup{},
+			Hash:      Hash{Key: ""},
 		},
 	}
 }

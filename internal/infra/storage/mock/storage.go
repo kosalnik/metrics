@@ -10,6 +10,7 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
+
 	models "github.com/kosalnik/metrics/internal/models"
 )
 

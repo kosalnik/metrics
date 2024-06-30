@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kosalnik/metrics/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kosalnik/metrics/internal/models"
 )
 
 func TestMemStorage_GetCounter(t *testing.T) {
@@ -237,5 +238,19 @@ func TestMemStorage_UpsertAll(t *testing.T) {
 			require.Equal(t, tt.wantGauge, m.gauge)
 			require.Equal(t, tt.wantCounter, m.counter)
 		})
+	}
+}
+
+func BenchmarkMemStorage_UpsertAll(t *testing.B) {
+
+	ctx := context.Background()
+	m := NewMemStorage()
+	for i := 0; i < t.N; i++ {
+		require.NoError(t, m.UpsertAll(ctx, []models.Metrics{
+			{ID: fmt.Sprintf("asd%d", i), MType: models.MCounter, Delta: int64(i)},
+			{ID: fmt.Sprintf("asd%d", i), MType: models.MGauge, Value: 3.14},
+			{ID: fmt.Sprintf("qwe%d", i), MType: models.MCounter, Delta: int64(i + 1)},
+			{ID: fmt.Sprintf("qwe%d", i), MType: models.MGauge, Value: 6.28},
+		}))
 	}
 }

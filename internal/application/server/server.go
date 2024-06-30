@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/jackc/pgx/v5/stdlib"
+
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/handlers"
 	"github.com/kosalnik/metrics/internal/infra/backup"
@@ -108,6 +109,9 @@ func (app *App) GetRouter() chi.Router {
 			r.Get("/{type}/{name}", handlers.NewGetHandler(app.Storage))
 		})
 		r.Get("/ping", handlers.NewPingHandler(app.Storage))
+		if app.config.Profiling.Enabled {
+			r.Mount("/profiler", middleware.Profiler())
+		}
 	})
 	return r
 }
