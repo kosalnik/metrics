@@ -3,9 +3,9 @@
 package config
 
 import (
-	"github.com/kosalnik/metrics/internal/infra/backup"
-	"github.com/kosalnik/metrics/internal/infra/crypt"
-	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/backup"
+	"github.com/kosalnik/metrics/internal/crypt"
+	"github.com/kosalnik/metrics/internal/logger"
 )
 
 type Config struct {

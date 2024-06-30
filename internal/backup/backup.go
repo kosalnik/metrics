@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 // Dump - Тип выполняет сохранение содержимого хранилища на диск.

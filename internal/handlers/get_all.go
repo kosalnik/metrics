@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {

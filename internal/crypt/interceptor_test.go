@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/kosalnik/metrics/internal/infra/crypt"
+	"github.com/kosalnik/metrics/internal/crypt"
 )
 
 func TestVerifyHashInterceptor(t *testing.T) {

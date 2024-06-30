@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/logger"
 )
 
 func HashCheckMiddleware(cfg Config) func(next http.Handler) http.Handler {

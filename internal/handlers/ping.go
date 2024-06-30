@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 func NewPingHandler(db storage.Storage) func(res http.ResponseWriter, req *http.Request) {

@@ -12,14 +12,14 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	"github.com/kosalnik/metrics/internal/backup"
 	"github.com/kosalnik/metrics/internal/config"
+	"github.com/kosalnik/metrics/internal/crypt"
 	"github.com/kosalnik/metrics/internal/handlers"
-	"github.com/kosalnik/metrics/internal/infra/backup"
-	"github.com/kosalnik/metrics/internal/infra/crypt"
-	"github.com/kosalnik/metrics/internal/infra/logger"
-	"github.com/kosalnik/metrics/internal/infra/memstorage"
-	"github.com/kosalnik/metrics/internal/infra/postgres"
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/memstorage"
+	"github.com/kosalnik/metrics/internal/postgres"
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 type App struct {

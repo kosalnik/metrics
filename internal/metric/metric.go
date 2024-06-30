@@ -9,7 +9,7 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/mem"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/logger"
 )
 
 func GetMetrics(ctx context.Context) (map[string]float64, error) {

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kosalnik/metrics/internal/infra/crypt"
+	"github.com/kosalnik/metrics/internal/crypt"
 )
 
 var headerName = "HashSHA256"

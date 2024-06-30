@@ -8,8 +8,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/storage"
 
 	"github.com/kosalnik/metrics/internal/models"
 )

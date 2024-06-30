@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/kosalnik/metrics/internal/infra/backup"
-	"github.com/kosalnik/metrics/internal/infra/storage/mock"
+	"github.com/kosalnik/metrics/internal/backup"
+	"github.com/kosalnik/metrics/internal/storage/mock"
 )
 
 func TestRecover(t *testing.T) {

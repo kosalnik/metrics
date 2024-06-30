@@ -8,9 +8,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/logger"
 	"github.com/kosalnik/metrics/internal/models"
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {

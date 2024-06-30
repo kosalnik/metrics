@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/logger"
 	"github.com/kosalnik/metrics/internal/models"
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 type Dumper interface {
