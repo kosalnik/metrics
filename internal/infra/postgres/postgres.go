@@ -1,3 +1,4 @@
+// Package postgres содержит реализацию репозиториев к БД postgres.
 package postgres
 
 import (

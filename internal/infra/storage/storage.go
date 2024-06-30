@@ -1,3 +1,4 @@
+// Package storage содержит интерфейсы, которые должен реализовывать storage.
 package storage
 
 import (

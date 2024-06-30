@@ -1,3 +1,4 @@
+// Package logger initializes logger.
 package logger
 
 import (

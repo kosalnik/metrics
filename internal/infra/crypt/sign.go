@@ -1,3 +1,4 @@
+// Package crypt contains working with signs.
 package crypt
 
 import (
@@ -7,14 +8,14 @@ import (
 	"net/http"
 )
 
-var hashHeader string = "HashSHA256"
+const hashHeader = "HashSHA256"
 
 func ExtractSign(r *http.Request) string {
-	return r.Header.Get("HashSHA256")
+	return r.Header.Get(hashHeader)
 }
 
 func ToSignRequest(r *http.Request, value string) {
-	r.Header.Set("HashSHA256", value)
+	r.Header.Set(hashHeader, value)
 }
 
 func GetSign(data []byte, key []byte) string {

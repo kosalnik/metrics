@@ -1,3 +1,5 @@
+// Package config contains config.
+// Ну что тут сказать. В этом пакете находятся структуры конфигураций компонентов системы.
 package config
 
 type Config struct {

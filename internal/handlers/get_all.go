@@ -1,3 +1,5 @@
+// Package handlers contains handlers.
+// Методы этого пакета создают хендлеры для http.Server
 package handlers
 
 import (

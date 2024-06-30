@@ -1,3 +1,4 @@
+// Package memstorage implements storage in memory.
 package memstorage
 
 import (
@@ -18,11 +19,6 @@ type MemStorage struct {
 	gauge     map[string]float64
 	counter   map[string]int64
 	updatedAt time.Time
-}
-
-type MemStorageItem struct {
-	class string
-	index int
 }
 
 func NewMemStorage() *MemStorage {

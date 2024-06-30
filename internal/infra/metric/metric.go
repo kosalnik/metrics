@@ -1,3 +1,5 @@
+// Package metric contains implementation of the metrics getter.
+// Method GetMetrics receives the set of metrics from system.
 package metric
 
 import (
