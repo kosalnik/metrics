@@ -62,21 +62,12 @@ func NewBackupManager(s Storage, cfg Config) (*BackupManager, error) {
 	}, nil
 }
 
-// ScheduleBackup - запустить автоматический бекап по расписанию.
-// Будет скидывать бекап на диск через равные промежутки времени.
-func (m *BackupManager) ScheduleBackup(ctx context.Context) error {
+func (m *BackupManager) BackupLoop(ctx context.Context) {
 	if m == nil || m.dump == nil || m.backupInterval == 0 {
 		logger.Logger.Info("schedule backup skipped")
-		return nil
+		return
 	}
 
-	logger.Logger.Info("schedule backup")
-	go m.backupLoop(ctx)
-
-	return nil
-}
-
-func (m *BackupManager) backupLoop(ctx context.Context) {
 	tick := time.NewTicker(m.backupInterval)
 	defer tick.Stop()
 

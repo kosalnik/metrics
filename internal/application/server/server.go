@@ -72,6 +72,8 @@ func (app *App) initDB(ctx context.Context) error {
 	return nil
 }
 
+// ScheduleBackup - запустить автоматический бекап по расписанию.
+// Будет скидывать бекап на диск через равные промежутки времени.
 func (app *App) initBackup(ctx context.Context) error {
 	var err error
 	bm, err := backup.NewBackupManager(app.Storage, app.config.Backup)
@@ -83,9 +85,9 @@ func (app *App) initBackup(ctx context.Context) error {
 			return err
 		}
 	}
-	if err = bm.ScheduleBackup(ctx); err != nil {
-		return err
-	}
+
+	logger.Logger.Info("schedule backup")
+	go bm.BackupLoop(ctx)
 
 	return nil
 }

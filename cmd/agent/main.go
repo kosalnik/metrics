@@ -14,7 +14,7 @@ import (
 func main() {
 	cfg := config.NewConfig()
 	parseFlags(&cfg.Agent)
-	if err := logger.InitLogger(cfg.Agent.Logger); err != nil {
+	if err := logger.InitLogger(cfg.Agent.Logger.Level); err != nil {
 		panic(err.Error())
 	}
 	if cfg.Agent.Profiling.Enabled {

@@ -10,7 +10,7 @@ import (
 )
 
 type Recover struct {
-	storage storage.Recoverer
+	recover storage.Recoverer
 	path    string
 }
 
@@ -18,7 +18,7 @@ type Recover struct {
 // На вход подаётся объект реализующий интерфейс storage.Recoverer и путь к файлу из которого нужно восстанавливать.
 func NewRecover(storage storage.Recoverer, path string) *Recover {
 	return &Recover{
-		storage: storage,
+		recover: storage,
 		path:    path,
 	}
 }
@@ -41,7 +41,7 @@ func (m *Recover) Recover(ctx context.Context) error {
 	if len(b.Data) == 0 {
 		return nil
 	}
-	if err := m.storage.UpsertAll(ctx, b.Data); err != nil {
+	if err := m.recover.UpsertAll(ctx, b.Data); err != nil {
 		return err
 	}
 

@@ -11,11 +11,11 @@ type Config struct {
 	Level string
 }
 
-func InitLogger(cfg Config) error {
-	if level, err := logrus.ParseLevel(cfg.Level); err != nil {
+func InitLogger(levelName string) error {
+	level, err := logrus.ParseLevel(levelName)
+	if err != nil {
 		return err
-	} else {
-		Logger.SetLevel(level)
 	}
+	Logger.SetLevel(level)
 	return nil
 }

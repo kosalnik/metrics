@@ -13,7 +13,7 @@ func main() {
 	cfg := config.NewConfig()
 	parseFlags(&cfg.Server)
 	app := server.NewApp(cfg.Server)
-	if err := logger.InitLogger(cfg.Server.Logger); err != nil {
+	if err := logger.InitLogger(cfg.Server.Logger.Level); err != nil {
 		panic(err.Error())
 	}
 	err := app.Run(context.Background())

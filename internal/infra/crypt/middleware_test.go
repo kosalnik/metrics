@@ -119,24 +119,22 @@ func BenchmarkHashCheckMiddleware(b *testing.B) {
 
 	for name, tt := range tests {
 		b.Run(name, func(b *testing.B) {
+			mw := crypt.HashCheckMiddleware(tt.cfg)
+			mux := http.NewServeMux()
+			mux.HandleFunc(`/`, func(writer http.ResponseWriter, request *http.Request) {
+				defer require.NoError(b, request.Body.Close())
+				got, err := io.ReadAll(request.Body)
+				require.NoError(b, err)
+				if !bytes.Equal(got, []byte(tt.body)) {
+					b.Errorf("Body changed. Got: %s, Want: %s", got, tt.body)
+				}
+			})
+			h := mw(mux)
 			for i := 0; i < b.N; i++ {
 				b.StopTimer()
-
-				mw := crypt.HashCheckMiddleware(tt.cfg)
-				mux := http.NewServeMux()
-				mux.HandleFunc(`/`, func(writer http.ResponseWriter, request *http.Request) {
-					defer require.NoError(b, request.Body.Close())
-					got, err := io.ReadAll(request.Body)
-					require.NoError(b, err)
-					if !bytes.Equal(got, []byte(tt.body)) {
-						b.Errorf("Body changed. Got: %s, Want: %s", got, tt.body)
-					}
-				})
-				h := mw(mux)
 				r := httptest.NewRequest(http.MethodPost, `/`, strings.NewReader(tt.body))
 				r.Header.Set(headerName, tt.header)
 				w := httptest.NewRecorder()
-
 				b.StartTimer()
 
 				h.ServeHTTP(w, r)

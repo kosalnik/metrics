@@ -135,9 +135,8 @@ func Example() {
 
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second))
 	defer cancel()
-	if err := b.ScheduleBackup(ctx); err != nil {
-		panic(err)
-	}
+
+	go b.BackupLoop(ctx)
 
 	s.s = []models.Metrics{
 		{ID: "pi", MType: models.MGauge, Value: 3.14},
