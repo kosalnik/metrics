@@ -3,13 +3,15 @@ package logger
 
 import (
 	"github.com/sirupsen/logrus"
-
-	"github.com/kosalnik/metrics/internal/config"
 )
 
 var Logger = logrus.New()
 
-func InitLogger(cfg config.Logger) error {
+type Config struct {
+	Level string
+}
+
+func InitLogger(cfg Config) error {
 	if level, err := logrus.ParseLevel(cfg.Level); err != nil {
 		return err
 	} else {

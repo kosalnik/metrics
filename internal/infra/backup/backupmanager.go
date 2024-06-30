@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/logger"
 	"github.com/kosalnik/metrics/internal/infra/storage"
 	"github.com/kosalnik/metrics/internal/models"
@@ -39,7 +38,7 @@ type BackupManager struct {
 
 // NewBackupManager - создаёт BackupManager с конфигурацией config.Backup.
 // На вход принимает хранилище с интерфейсом Storage и настройки бекапа.
-func NewBackupManager(s Storage, cfg config.Backup) (*BackupManager, error) {
+func NewBackupManager(s Storage, cfg Config) (*BackupManager, error) {
 	if cfg.FileStoragePath == "" {
 		return nil, nil
 	}

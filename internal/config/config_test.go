@@ -3,6 +3,8 @@ package config
 import (
 	"reflect"
 	"testing"
+
+	"github.com/kosalnik/metrics/internal/infra/logger"
 )
 
 func TestNewConfig(t *testing.T) {
@@ -12,14 +14,14 @@ func TestNewConfig(t *testing.T) {
 	}{
 		{name: "create", want: &Config{
 			Agent: Agent{
-				Logger:           Logger{Level: "info"},
+				Logger:           logger.Config{Level: "info"},
 				CollectorAddress: "127.0.0.1:8080",
 				PollInterval:     2,
 				ReportInterval:   10,
 				RateLimit:        1,
 			},
 			Server: Server{
-				Logger:  Logger{Level: "info"},
+				Logger:  logger.Config{Level: "info"},
 				Address: ":8080",
 			},
 		}},

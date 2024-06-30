@@ -5,11 +5,9 @@ import (
 	"context"
 	"io"
 	"net/http"
-
-	"github.com/kosalnik/metrics/internal/config"
 )
 
-func VerifyHashInterceptor(cfg config.Hash, transport http.RoundTripper) *AddHash {
+func VerifyHashInterceptor(cfg Config, transport http.RoundTripper) *AddHash {
 	return &AddHash{
 		core: transport,
 		key:  []byte(cfg.Key),

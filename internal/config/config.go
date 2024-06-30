@@ -2,6 +2,12 @@
 // Ну что тут сказать. В этом пакете находятся структуры конфигураций компонентов системы.
 package config
 
+import (
+	"github.com/kosalnik/metrics/internal/infra/backup"
+	"github.com/kosalnik/metrics/internal/infra/crypt"
+	"github.com/kosalnik/metrics/internal/infra/logger"
+)
+
 type Config struct {
 	Agent  Agent
 	Server Server
@@ -9,62 +15,70 @@ type Config struct {
 
 type Agent struct {
 	Profiling        Profiling
-	Logger           Logger
+	Logger           logger.Config
 	CollectorAddress string // Адрес сервера, куда клиент будет посылать метрики
 	PollInterval     int64  // Время между сборами метрик
 	ReportInterval   int64  // Время между отправками метрик на сервер
 	RateLimit        int64  //
-	Hash             Hash
+	Hash             crypt.Config
 }
 
 type Server struct {
 	Profiling Profiling
-	Logger    Logger
+	Logger    logger.Config
 	Address   string // ip:host, которые слушает сервер
-	Backup    Backup
+	Backup    backup.Config
 	DB        DB
-	Hash      Hash
+	Hash      crypt.Config
 }
 
 type Profiling struct {
 	Enabled bool
 }
 
-type Hash struct {
-	Key string // HASH SHA256 Key
-}
-
-type Backup struct {
-	StoreInterval   int
-	FileStoragePath string
-	Restore         bool
-}
-
 type DB struct {
 	DSN string
-}
-
-type Logger struct {
-	Level string
 }
 
 func NewConfig() *Config {
 	return &Config{
 		Agent: Agent{
 			Profiling:        Profiling{},
-			Logger:           Logger{Level: "info"},
+			Logger:           logger.Config{Level: "info"},
 			CollectorAddress: "127.0.0.1:8080",
 			PollInterval:     2,
 			ReportInterval:   10,
-			Hash:             Hash{Key: ""},
+			Hash:             crypt.Config{Key: ""},
 			RateLimit:        1,
 		},
 		Server: Server{
 			Profiling: Profiling{},
-			Logger:    Logger{Level: "info"},
+			Logger:    logger.Config{Level: "info"},
 			Address:   ":8080",
-			Backup:    Backup{},
-			Hash:      Hash{Key: ""},
+			Backup:    backup.Config{},
+			Hash:      crypt.Config{Key: ""},
 		},
+	}
+}
+
+func NewAgent() *Agent {
+	return &Agent{
+		Profiling:        Profiling{},
+		Logger:           logger.Config{Level: "info"},
+		CollectorAddress: "127.0.0.1:8080",
+		PollInterval:     2,
+		ReportInterval:   10,
+		Hash:             crypt.Config{Key: ""},
+		RateLimit:        1,
+	}
+}
+
+func NewServer() *Server {
+	return &Server{
+		Profiling: Profiling{},
+		Logger:    logger.Config{Level: "info"},
+		Address:   ":8080",
+		Backup:    backup.Config{},
+		Hash:      crypt.Config{Key: ""},
 	}
 }

@@ -8,24 +8,23 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/crypt"
 )
 
 func TestVerifyHashInterceptor(t *testing.T) {
 	tests := map[string]struct {
 		name       string
-		cfg        config.Hash
+		cfg        crypt.Config
 		body       string
 		wantHeader string
 	}{
 		"Success. Empty Key": {
-			cfg:        config.Hash{Key: ""},
+			cfg:        crypt.Config{Key: ""},
 			body:       `asdf`,
 			wantHeader: ``,
 		},
 		"Success. With Key": {
-			cfg:        config.Hash{Key: "Secret"},
+			cfg:        crypt.Config{Key: "Secret"},
 			body:       `Hello`,
 			wantHeader: `6cd4180752f6880f553f2c73c89efe222166924f7bb9707c6240e4b88de77122`,
 		},

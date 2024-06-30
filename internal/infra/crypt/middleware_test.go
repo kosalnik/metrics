@@ -10,43 +10,42 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/crypt"
 )
 
 func TestHashCheckMiddleware(t *testing.T) {
 	tests := map[string]struct {
-		cfg    config.Hash
+		cfg    crypt.Config
 		body   string
 		header string
 		want   int
 	}{
 		"Success. Empty Key": {
-			cfg:    config.Hash{Key: ""},
+			cfg:    crypt.Config{Key: ""},
 			body:   `asdf`,
 			header: `f553f2c73c8`,
 			want:   http.StatusOK,
 		},
 		"Success. With Key": {
-			cfg:    config.Hash{Key: "Secret"},
+			cfg:    crypt.Config{Key: "Secret"},
 			body:   `Hello`,
 			header: `6cd4180752f6880f553f2c73c89efe222166924f7bb9707c6240e4b88de77122`,
 			want:   http.StatusOK,
 		},
 		"Invalid hash. Other Key": {
-			cfg:    config.Hash{Key: "asd"},
+			cfg:    crypt.Config{Key: "asd"},
 			body:   `Hello`,
 			header: `6cd4180752f6880f553f2c73c89efe222166924f7bb9707c6240e4b88de77122`,
 			want:   http.StatusBadRequest,
 		},
 		"Invalid hash. Other body": {
-			cfg:    config.Hash{Key: "Secret"},
+			cfg:    crypt.Config{Key: "Secret"},
 			body:   `asd`,
 			header: `6cd4180752f6880f553f2c73c89efe222166924f7bb9707c6240e4b88de77122`,
 			want:   http.StatusBadRequest,
 		},
 		"Invalid hash. Other hash": {
-			cfg:    config.Hash{Key: "Secret"},
+			cfg:    crypt.Config{Key: "Secret"},
 			body:   `Hello`,
 			header: `asdf`,
 			want:   http.StatusBadRequest,
@@ -79,37 +78,37 @@ func TestHashCheckMiddleware(t *testing.T) {
 
 func BenchmarkHashCheckMiddleware(b *testing.B) {
 	tests := map[string]struct {
-		cfg    config.Hash
+		cfg    crypt.Config
 		body   string
 		header string
 		want   int
 	}{
 		"Success. Empty Key": {
-			cfg:    config.Hash{Key: ""},
+			cfg:    crypt.Config{Key: ""},
 			body:   `asdf`,
 			header: `f553f2c73c8`,
 			want:   http.StatusOK,
 		},
 		"Success. With Key": {
-			cfg:    config.Hash{Key: "Secret"},
+			cfg:    crypt.Config{Key: "Secret"},
 			body:   `Hello`,
 			header: `6cd4180752f6880f553f2c73c89efe222166924f7bb9707c6240e4b88de77122`,
 			want:   http.StatusOK,
 		},
 		"Invalid hash. Other Key": {
-			cfg:    config.Hash{Key: "asd"},
+			cfg:    crypt.Config{Key: "asd"},
 			body:   `Hello`,
 			header: `6cd4180752f6880f553f2c73c89efe222166924f7bb9707c6240e4b88de77122`,
 			want:   http.StatusBadRequest,
 		},
 		"Invalid hash. Other body": {
-			cfg:    config.Hash{Key: "Secret"},
+			cfg:    crypt.Config{Key: "Secret"},
 			body:   `asd`,
 			header: `6cd4180752f6880f553f2c73c89efe222166924f7bb9707c6240e4b88de77122`,
 			want:   http.StatusBadRequest,
 		},
 		"Invalid hash. Other hash": {
-			cfg:    config.Hash{Key: "Secret"},
+			cfg:    crypt.Config{Key: "Secret"},
 			body:   `Hello`,
 			header: `asdf`,
 			want:   http.StatusBadRequest,

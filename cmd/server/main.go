@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	_ "net/http/pprof"
 
 	"github.com/kosalnik/metrics/internal/application/server"
 	"github.com/kosalnik/metrics/internal/config"

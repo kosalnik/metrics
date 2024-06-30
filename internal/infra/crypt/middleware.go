@@ -5,11 +5,10 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/infra/logger"
 )
 
-func HashCheckMiddleware(cfg config.Hash) func(next http.Handler) http.Handler {
+func HashCheckMiddleware(cfg Config) func(next http.Handler) http.Handler {
 	if cfg.Key == "" {
 		return func(next http.Handler) http.Handler {
 			return next

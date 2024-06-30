@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/models"
 )
 
@@ -110,7 +109,7 @@ func Example() {
 	}
 
 	s := &MyStorage{}
-	b, err := NewBackupManager(s, config.Backup{
+	b, err := NewBackupManager(s, Config{
 		StoreInterval:   1,
 		FileStoragePath: fname,
 		Restore:         true,
