@@ -6,7 +6,8 @@ package main
 import (
 	"strings"
 
-	"github.com/kosalnik/metrics/internal/statcheck/passes/exitonmain"
+	"github.com/kosalnik/metrics/cmd/staticlint/passes/exitonmain"
+
 	"github.com/tdakkota/asciicheck"
 	"github.com/timakin/bodyclose/passes/bodyclose"
 	"golang.org/x/tools/go/analysis"
