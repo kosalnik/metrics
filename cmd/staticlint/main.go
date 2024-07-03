@@ -1,6 +1,14 @@
 // Package staticlint - составной стат-анализатор для анализа кода по множеству правил.
+// Включает в себя:
+// * все стандартные статические анализаторы пакета golang.org/x/tools/go/analysis/passes;
+// * все анализаторы класса SA пакета staticcheck.io;
+// * анализатор U1000 пакета staticcheck.io;
+// * github.com/tdakkota/asciicheck;
+// * github.com/timakin/bodyclose/passes/bodyclose;
+// * и анализатор использования os.Exit в main функции пакета main;
 // Использование:
-// @TODO
+// ./staticlint [fileSelector]
+// Для помощи, набрать ./staticlint -help
 package main
 
 import (
