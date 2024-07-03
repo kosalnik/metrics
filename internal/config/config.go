@@ -9,27 +9,27 @@ import (
 )
 
 type Config struct {
-	Agent  Agent
 	Server Server
+	Agent  Agent
 }
 
 type Agent struct {
-	Profiling        Profiling
-	Logger           logger.Config
-	CollectorAddress string // Адрес сервера, куда клиент будет посылать метрики
-	PollInterval     int64  // Время между сборами метрик
-	ReportInterval   int64  // Время между отправками метрик на сервер
-	RateLimit        int64  //
+	CollectorAddress string
 	Hash             crypt.Config
+	Logger           logger.Config
+	PollInterval     int64
+	ReportInterval   int64
+	RateLimit        int64
+	Profiling        Profiling
 }
 
 type Server struct {
-	Profiling Profiling
 	Logger    logger.Config
-	Address   string // ip:host, которые слушает сервер
-	Backup    backup.Config
 	DB        DB
 	Hash      crypt.Config
+	Address   string
+	Backup    backup.Config
+	Profiling Profiling
 }
 
 type Profiling struct {

@@ -1,7 +1,7 @@
 package backup
 
 type Config struct {
-	StoreInterval   int
 	FileStoragePath string
+	StoreInterval   int
 	Restore         bool
 }

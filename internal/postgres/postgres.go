@@ -25,9 +25,9 @@ var schemaCounterSQL = `CREATE TABLE IF NOT EXISTS counter(
     )`
 
 type DBStorage struct {
+	updatedAt time.Time
 	db        *sql.DB
 	mu        sync.Mutex
-	updatedAt time.Time
 }
 
 func NewDB(ctx context.Context, cfg config.DB) (*DBStorage, error) {
@@ -44,7 +44,7 @@ func NewDB(ctx context.Context, cfg config.DB) (*DBStorage, error) {
 		return nil, err
 	}
 
-	return &DBStorage{db, sync.Mutex{}, time.Now()}, nil
+	return &DBStorage{mu: sync.Mutex{}, updatedAt: time.Now(), db: db}, nil
 }
 
 func (d *DBStorage) GetGauge(ctx context.Context, name string) (*models.Metrics, error) {

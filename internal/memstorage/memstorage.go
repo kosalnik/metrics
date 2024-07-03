@@ -15,10 +15,10 @@ import (
 )
 
 type MemStorage struct {
-	mu        sync.Mutex
+	updatedAt time.Time
 	gauge     map[string]float64
 	counter   map[string]int64
-	updatedAt time.Time
+	mu        sync.Mutex
 }
 
 func NewMemStorage() *MemStorage {

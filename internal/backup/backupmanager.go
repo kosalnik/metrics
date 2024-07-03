@@ -32,8 +32,8 @@ type BackupManager struct {
 	dump           Dumper
 	recover        Recoverer
 	storage        Storage
-	backupInterval time.Duration
 	lastBackup     time.Time
+	backupInterval time.Duration
 }
 
 // NewBackupManager - создаёт BackupManager с конфигурацией config.Backup.

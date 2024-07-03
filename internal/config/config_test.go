@@ -9,8 +9,8 @@ import (
 
 func TestNewConfig(t *testing.T) {
 	tests := []struct {
-		name string
 		want *Config
+		name string
 	}{
 		{name: "create", want: &Config{
 			Agent: Agent{

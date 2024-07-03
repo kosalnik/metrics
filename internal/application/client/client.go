@@ -17,11 +17,11 @@ import (
 )
 
 type Client struct {
-	mu        sync.Mutex
 	sender    Sender
 	config    *config.Agent
 	gauge     map[string]float64
 	pollCount int64
+	mu        sync.Mutex
 }
 
 func NewClient(ctx context.Context, config config.Agent) *Client {

@@ -10,8 +10,8 @@ import (
 )
 
 type MyStorage struct {
-	s []models.Metrics
 	u time.Time
+	s []models.Metrics
 }
 
 func (m *MyStorage) UpsertAll(_ context.Context, list []models.Metrics) error {
@@ -40,8 +40,8 @@ func ExampleDump_Store() {
 		panic(err)
 	}
 	defer func() {
-		if err := os.Remove(tmp.Name()); err != nil {
-			fmt.Println(err.Error())
+		if er := os.Remove(tmp.Name()); er != nil {
+			fmt.Println(er.Error())
 		}
 	}()
 	s := &MyStorage{s: []models.Metrics{
@@ -49,8 +49,8 @@ func ExampleDump_Store() {
 		{ID: "cnt", MType: models.MCounter, Value: 1},
 	}}
 	b := NewDump(s, tmp.Name())
-	if err := b.Store(context.Background()); err != nil {
-		panic(err)
+	if er := b.Store(context.Background()); er != nil {
+		panic(er)
 	}
 	got, err := os.ReadFile(tmp.Name())
 	if err != nil {
@@ -67,8 +67,8 @@ func ExampleRecover_Recover() {
 		panic(err)
 	}
 	defer func() {
-		if err := os.Remove(tmp.Name()); err != nil {
-			fmt.Println(err.Error())
+		if er := os.Remove(tmp.Name()); er != nil {
+			fmt.Println(er.Error())
 		}
 	}()
 	_, err = fmt.Fprint(tmp, `{"Data":[{"id":"pi","type":"gauge","value":3.14},{"id":"cnt","type":"counter","delta":0}]}`)
@@ -77,8 +77,8 @@ func ExampleRecover_Recover() {
 	}
 	s := &MyStorage{}
 	b := NewRecover(s, tmp.Name())
-	if err := b.Recover(context.Background()); err != nil {
-		panic(err)
+	if er := b.Recover(context.Background()); er != nil {
+		panic(er)
 	}
 	m, err := s.GetAll(context.Background())
 	if err != nil {
@@ -96,16 +96,16 @@ func Example() {
 	}
 	fname := tmp.Name()
 	defer func() {
-		if err := os.Remove(tmp.Name()); err != nil {
-			fmt.Println(err.Error())
+		if er := os.Remove(tmp.Name()); er != nil {
+			fmt.Println(er.Error())
 		}
 	}()
 	_, err = fmt.Fprint(tmp, `{"Data":[{"id":"e","type":"gauge","value":2.71828}]}`)
 	if err != nil {
 		panic(err)
 	}
-	if err := tmp.Close(); err != nil {
-		panic(err)
+	if er := tmp.Close(); er != nil {
+		panic(er)
 	}
 
 	s := &MyStorage{}
@@ -124,8 +124,8 @@ func Example() {
 	}
 	fmt.Printf("Init: %+v\n", m)
 
-	if err := b.Recover(context.Background()); err != nil {
-		panic(err)
+	if er := b.Recover(context.Background()); er != nil {
+		panic(er)
 	}
 	m, err = s.GetAll(context.Background())
 	if err != nil {

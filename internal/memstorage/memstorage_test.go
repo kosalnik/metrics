@@ -17,10 +17,10 @@ func TestMemStorage_GetCounter(t *testing.T) {
 		counter map[string]int64
 	}
 	tests := []struct {
-		name         string
 		storageState storageState
-		metricName   string
 		want         *models.Metrics
+		metricName   string
+		name         string
 	}{
 		{
 			name: "empty storage",
@@ -73,10 +73,10 @@ func TestMemStorage_GetGauge(t *testing.T) {
 		counter map[string]int64
 	}
 	tests := []struct {
-		name         string
 		storageState storageState
-		metricName   string
 		want         *models.Metrics
+		name         string
+		metricName   string
 	}{
 		{
 			name: "empty storage",
@@ -133,10 +133,10 @@ func TestMemStorage_IncCounter(t *testing.T) {
 		value int64
 	}
 	tests := []struct {
-		name         string
 		storageState storageState
-		metric       metric
 		want         *models.Metrics
+		name         string
+		metric       metric
 	}{
 		{
 			name: "empty storage",
@@ -196,10 +196,10 @@ func TestNewStorage(t *testing.T) {
 
 func TestMemStorage_UpsertAll(t *testing.T) {
 	tests := []struct {
-		name        string
-		list        []models.Metrics
 		wantGauge   map[string]float64
 		wantCounter map[string]int64
+		name        string
+		list        []models.Metrics
 	}{
 		{
 			name: "only counters",

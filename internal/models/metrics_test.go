@@ -4,14 +4,14 @@ import "testing"
 
 func TestMetrics_String(t *testing.T) {
 	type fields struct {
-		ID    string
 		MType MType
+		ID    string
 		Delta int64
 		Value float64
 	}
 	tests := map[string]struct {
-		fields fields
 		want   string
+		fields fields
 	}{
 		"counter": {
 			fields: fields{ID: "zxc", MType: "counter", Delta: 10},
