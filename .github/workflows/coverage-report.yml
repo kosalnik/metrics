@@ -12,7 +12,7 @@ jobs:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: praktikum
+          POSTGRES_DB: test
         options: >-
           --health-cmd pg_isready
           --health-interval 5s
@@ -25,8 +25,8 @@ jobs:
 
     - name: Test
       env:
-        TEST_DSN: "postgres://postgres:postgres@postgresql:5432/praktikum?sslmode=disable"
-      run: sleep 5 && go test -coverprofile ./c.out  $(go list ./... | grep -v /mock/)
+        TEST_DSN: "postgres://postgres:postgres@postgresql:5432/test?sslmode=disable"
+      run: go test -coverprofile ./c.out  $(go list ./... | grep -v /mock/)
 
     - name: Update coverage report
       uses: ncruces/go-coverage-report@v0
