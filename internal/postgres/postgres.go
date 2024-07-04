@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/logger"
 	"github.com/kosalnik/metrics/internal/models"
 )
@@ -30,21 +29,18 @@ type DBStorage struct {
 	mu        sync.Mutex
 }
 
-func NewDB(ctx context.Context, cfg config.DB) (*DBStorage, error) {
-	db, err := sql.Open("pgx", cfg.DSN)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err := db.ExecContext(ctx, schemaCounterSQL); err != nil {
-		return nil, err
-	}
-
-	if _, err := db.ExecContext(ctx, schemaGaugeSQL); err != nil {
-		return nil, err
-	}
-
+func NewDBStorage(db *sql.DB) (*DBStorage, error) {
 	return &DBStorage{mu: sync.Mutex{}, updatedAt: time.Now(), db: db}, nil
+}
+
+func (d *DBStorage) InitTables(ctx context.Context) error {
+	if _, err := d.db.ExecContext(ctx, schemaCounterSQL); err != nil {
+		return err
+	}
+	if _, err := d.db.ExecContext(ctx, schemaGaugeSQL); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (d *DBStorage) GetGauge(ctx context.Context, name string) (*models.Metrics, error) {

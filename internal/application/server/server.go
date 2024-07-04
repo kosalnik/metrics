@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/kosalnik/metrics/internal/backup"
 	"github.com/kosalnik/metrics/internal/config"
@@ -28,7 +27,6 @@ type App struct {
 }
 
 func NewApp(cfg config.Server) *App {
-
 	return &App{
 		config: cfg,
 	}
@@ -63,12 +61,18 @@ func (app *App) initStorage(ctx context.Context) error {
 }
 
 func (app *App) initDB(ctx context.Context) error {
-	db, err := postgres.NewDB(ctx, app.config.DB)
+	db, err := postgres.NewConn(app.config.DB.DSN)
 	if err != nil {
 		return err
 	}
-	app.Storage = db
-
+	dbs, err := postgres.NewDBStorage(db)
+	if err != nil {
+		return err
+	}
+	if err := dbs.InitTables(ctx); err != nil {
+		return err
+	}
+	app.Storage = dbs
 	return nil
 }
 
