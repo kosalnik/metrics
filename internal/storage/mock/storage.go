@@ -10,7 +10,6 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
-
 	models "github.com/kosalnik/metrics/internal/models"
 )
 
@@ -166,4 +165,153 @@ func (m *MockStorage) UpsertAll(ctx context.Context, list []models.Metrics) erro
 func (mr *MockStorageMockRecorder) UpsertAll(ctx, list interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAll", reflect.TypeOf((*MockStorage)(nil).UpsertAll), ctx, list)
+}
+
+// MockPinger is a mock of Pinger interface.
+type MockPinger struct {
+	ctrl     *gomock.Controller
+	recorder *MockPingerMockRecorder
+}
+
+// MockPingerMockRecorder is the mock recorder for MockPinger.
+type MockPingerMockRecorder struct {
+	mock *MockPinger
+}
+
+// NewMockPinger creates a new mock instance.
+func NewMockPinger(ctrl *gomock.Controller) *MockPinger {
+	mock := &MockPinger{ctrl: ctrl}
+	mock.recorder = &MockPingerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPinger) EXPECT() *MockPingerMockRecorder {
+	return m.recorder
+}
+
+// Ping mocks base method.
+func (m *MockPinger) Ping(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Ping", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Ping indicates an expected call of Ping.
+func (mr *MockPingerMockRecorder) Ping(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockPinger)(nil).Ping), ctx)
+}
+
+// MockDumper is a mock of Dumper interface.
+type MockDumper struct {
+	ctrl     *gomock.Controller
+	recorder *MockDumperMockRecorder
+}
+
+// MockDumperMockRecorder is the mock recorder for MockDumper.
+type MockDumperMockRecorder struct {
+	mock *MockDumper
+}
+
+// NewMockDumper creates a new mock instance.
+func NewMockDumper(ctrl *gomock.Controller) *MockDumper {
+	mock := &MockDumper{ctrl: ctrl}
+	mock.recorder = &MockDumperMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDumper) EXPECT() *MockDumperMockRecorder {
+	return m.recorder
+}
+
+// GetAll mocks base method.
+func (m *MockDumper) GetAll(ctx context.Context) ([]models.Metrics, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAll", ctx)
+	ret0, _ := ret[0].([]models.Metrics)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAll indicates an expected call of GetAll.
+func (mr *MockDumperMockRecorder) GetAll(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockDumper)(nil).GetAll), ctx)
+}
+
+// MockBatchInserter is a mock of BatchInserter interface.
+type MockBatchInserter struct {
+	ctrl     *gomock.Controller
+	recorder *MockBatchInserterMockRecorder
+}
+
+// MockBatchInserterMockRecorder is the mock recorder for MockBatchInserter.
+type MockBatchInserterMockRecorder struct {
+	mock *MockBatchInserter
+}
+
+// NewMockBatchInserter creates a new mock instance.
+func NewMockBatchInserter(ctrl *gomock.Controller) *MockBatchInserter {
+	mock := &MockBatchInserter{ctrl: ctrl}
+	mock.recorder = &MockBatchInserterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockBatchInserter) EXPECT() *MockBatchInserterMockRecorder {
+	return m.recorder
+}
+
+// UpsertAll mocks base method.
+func (m *MockBatchInserter) UpsertAll(ctx context.Context, list []models.Metrics) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertAll", ctx, list)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertAll indicates an expected call of UpsertAll.
+func (mr *MockBatchInserterMockRecorder) UpsertAll(ctx, list interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAll", reflect.TypeOf((*MockBatchInserter)(nil).UpsertAll), ctx, list)
+}
+
+// MockUpdateAwarer is a mock of UpdateAwarer interface.
+type MockUpdateAwarer struct {
+	ctrl     *gomock.Controller
+	recorder *MockUpdateAwarerMockRecorder
+}
+
+// MockUpdateAwarerMockRecorder is the mock recorder for MockUpdateAwarer.
+type MockUpdateAwarerMockRecorder struct {
+	mock *MockUpdateAwarer
+}
+
+// NewMockUpdateAwarer creates a new mock instance.
+func NewMockUpdateAwarer(ctrl *gomock.Controller) *MockUpdateAwarer {
+	mock := &MockUpdateAwarer{ctrl: ctrl}
+	mock.recorder = &MockUpdateAwarerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUpdateAwarer) EXPECT() *MockUpdateAwarerMockRecorder {
+	return m.recorder
+}
+
+// UpdatedAt mocks base method.
+func (m *MockUpdateAwarer) UpdatedAt() time.Time {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatedAt")
+	ret0, _ := ret[0].(time.Time)
+	return ret0
+}
+
+// UpdatedAt indicates an expected call of UpdatedAt.
+func (mr *MockUpdateAwarerMockRecorder) UpdatedAt() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatedAt", reflect.TypeOf((*MockUpdateAwarer)(nil).UpdatedAt))
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/kosalnik/metrics/internal/storage"
 )
 
-func NewUpdateBatchHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
+func NewUpdateBatchHandler(s storage.BatchInserter) func(res http.ResponseWriter, req *http.Request) {
 	return func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "application/json")
 		data, err := io.ReadAll(req.Body)

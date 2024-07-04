@@ -35,8 +35,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 				return
 			}
 			if v == nil {
-				http.NotFound(w, req)
-				return
+				break
 			}
 			if out, err := json.Marshal(v); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)
@@ -52,8 +51,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 				return
 			}
 			if v == nil {
-				http.NotFound(w, req)
-				return
+				break
 			}
 			if out, err := json.Marshal(v); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)

@@ -19,7 +19,7 @@ type Recoverer interface {
 
 type Storage interface {
 	storage.Dumper
-	storage.Recoverer
+	storage.BatchInserter
 	storage.UpdateAwarer
 }
 

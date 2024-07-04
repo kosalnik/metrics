@@ -10,13 +10,13 @@ import (
 )
 
 type Recover struct {
-	recover storage.Recoverer
+	recover storage.BatchInserter
 	path    string
 }
 
 // NewRecover - создаст инстанс типа Recover, которую можно использовать для восстановления Storage из бекапа.
-// На вход подаётся объект реализующий интерфейс storage.Recoverer и путь к файлу из которого нужно восстанавливать.
-func NewRecover(storage storage.Recoverer, path string) *Recover {
+// На вход подаётся объект реализующий интерфейс storage.BatchInserter и путь к файлу из которого нужно восстанавливать.
+func NewRecover(storage storage.BatchInserter, path string) *Recover {
 	return &Recover{
 		recover: storage,
 		path:    path,
