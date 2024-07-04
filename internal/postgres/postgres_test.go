@@ -34,22 +34,6 @@ func (s *PostgresSuite) SetupTest() {
 	s.Require().NoError(s.storage.InitTables(context.Background()))
 }
 
-const fixtures = `
-TRUNCATE TABLE gauge;
-TRUNCATE TABLE counter;
-INSERT INTO gauge (id, value) VALUES 
-	('pi', 3.1415),
-	('e', 2.718281828);
-INSERT INTO counter (id, value) VALUES
-	('two', 2),
-	('ten', 10);
-`
-
-func (s *PostgresSuite) BeforeTest() {
-	_, err := s.db.Exec(fixtures)
-	s.Require().NoError(err)
-}
-
 func TestDBStorage(t *testing.T) {
 	suite.Run(t, new(PostgresSuite))
 }
