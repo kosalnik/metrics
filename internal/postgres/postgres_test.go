@@ -43,7 +43,7 @@ func (s *PostgresSuite) TestPing() {
 }
 
 func (s *PostgresSuite) TestSetGauge() {
-	var val float64 = 123.456
+	var val = 123.456
 	id := fmt.Sprintf("sg%d", time.Now().Unix())
 	m, err := s.storage.SetGauge(context.Background(), id, val)
 	s.Require().NoError(err)
@@ -67,6 +67,7 @@ func (s *PostgresSuite) TestSetCounter() {
 	s.Require().Equal(models.MCounter, m.MType)
 
 	m, err = s.storage.IncCounter(context.Background(), id, val)
+	s.Require().NoError(err)
 	s.Require().Equal(val+val, m.Delta)
 
 	got, err := s.storage.GetCounter(context.Background(), id)
