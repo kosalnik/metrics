@@ -6,7 +6,6 @@ on:
 jobs:
   coveragereport:
     runs-on: ubuntu-latest
-    container: golang:1.21
 
     services:
       postgresql:
@@ -19,6 +18,8 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
     - name: Checkout code
@@ -26,7 +27,7 @@ jobs:
 
     - name: Test
       env:
-        TEST_DSN: postgres://postgres:postgres@postgresql:5432/test?sslmode=disable
+        TEST_DSN: postgres://postgres:postgres@localhost:5432/test?sslmode=disable
       run: go test -coverprofile ./c.out  $(go list ./... | grep -v /mock/)
 
     - name: Update coverage report
