@@ -12,11 +12,12 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Test
-      run: go test -v ./...
+      run: go test -coverprofile ./c.out  $(go list ./... | grep -v /mock/)
 
     - name: Update coverage report
-      uses: kosalnik/go-coverage-report@v0
+      uses: ncruces/go-coverage-report@v0
       with:
+        coverage-file: ./c.out
         report: true
         chart: true
         amend: true
