@@ -1,3 +1,5 @@
+[![Go Coverage](https://github.com/kosalnik/metrics/wiki/coverage.svg)](https://raw.githack.com/wiki/kosalnik/metrics/coverage.html)
+
 # go-musthave-metrics-tpl
 
 Шаблон репозитория для трека «Сервер сбора метрик и алертинга».
