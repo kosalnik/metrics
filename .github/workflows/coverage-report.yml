@@ -24,9 +24,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Test
-      env:
-        TEST_DSN: "postgres://postgres:postgres@postgresql:5432/test?sslmode=disable"
-      run: go test -coverprofile ./c.out  $(go list ./... | grep -v /mock/)
+      run: TEST_DSN=postgres://postgres:postgres@postgresql:5432/test?sslmode=disable go test -coverprofile ./c.out  $(go list ./... | grep -v /mock/)
 
     - name: Update coverage report
       uses: ncruces/go-coverage-report@v0
