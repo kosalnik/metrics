@@ -58,20 +58,6 @@ func (s *PostgresSuite) TestPing() {
 	require.NoError(s.T(), s.storage.Ping(context.Background()))
 }
 
-func (s *PostgresSuite) TestGetGauge() {
-	got, err := s.storage.GetGauge(context.Background(), "e")
-	s.Require().NoError(err)
-	s.Require().NotNil(got)
-	s.Require().Equal(2.718281828, got.Value)
-}
-
-func (s *PostgresSuite) TestGetCounter() {
-	got, err := s.storage.GetCounter(context.Background(), "ten")
-	s.Require().NoError(err)
-	s.Require().NotNil(got)
-	s.Require().Equal(int64(10), got.Delta)
-}
-
 func (s *PostgresSuite) TestSetGauge() {
 	var val float64 = 123.456
 	id := fmt.Sprintf("sg%d", time.Now().Unix())
@@ -80,6 +66,11 @@ func (s *PostgresSuite) TestSetGauge() {
 	s.Require().Equal(val, m.Value)
 	s.Require().Equal(id, m.ID)
 	s.Require().Equal(models.MGauge, m.MType)
+
+	got, err := s.storage.GetGauge(context.Background(), id)
+	s.Require().NoError(err)
+	s.Require().NotNil(got)
+	s.Require().Equal(val, got.Value)
 }
 
 func (s *PostgresSuite) TestSetCounter() {
@@ -93,6 +84,11 @@ func (s *PostgresSuite) TestSetCounter() {
 
 	m, err = s.storage.IncCounter(context.Background(), id, val)
 	s.Require().Equal(val+val, m.Delta)
+
+	got, err := s.storage.GetCounter(context.Background(), id)
+	s.Require().NoError(err)
+	s.Require().NotNil(got)
+	s.Require().Equal(val+val, got.Delta)
 }
 
 func (s *PostgresSuite) TestBulkActions() {
