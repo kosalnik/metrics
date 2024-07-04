@@ -61,12 +61,14 @@ func (s *PostgresSuite) TestPing() {
 func (s *PostgresSuite) TestGetGauge() {
 	got, err := s.storage.GetGauge(context.Background(), "e")
 	s.Require().NoError(err)
+	s.Require().NotNil(got.Value)
 	s.Require().Equal(2.718281828, got.Value)
 }
 
 func (s *PostgresSuite) TestGetCounter() {
 	got, err := s.storage.GetCounter(context.Background(), "ten")
 	s.Require().NoError(err)
+	s.Require().NotNil(got)
 	s.Require().Equal(int64(10), got.Delta)
 }
 
