@@ -26,7 +26,7 @@ func main() {
 		BuildCommit:  buildCommit,
 	}.Print(os.Stdout)
 	cfg := config.NewConfig()
-	parseFlags(&cfg.Agent)
+	parseFlags(os.Args, &cfg.Agent)
 	if err := logger.InitLogger(cfg.Agent.Logger.Level); err != nil {
 		panic(err.Error())
 	}

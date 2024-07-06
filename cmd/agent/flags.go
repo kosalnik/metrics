@@ -8,13 +8,17 @@ import (
 	"github.com/kosalnik/metrics/internal/config"
 )
 
-func parseFlags(c *config.Agent) {
-	flag.StringVar(&c.CollectorAddress, "a", "127.0.0.1:8080", "address server endpoint")
-	flag.Int64Var(&c.PollInterval, "p", 2, "Pool interval (seconds)")
-	flag.Int64Var(&c.ReportInterval, "r", 10, "Report interval (seconds)")
-	flag.Int64Var(&c.RateLimit, "l", 1, "Rate limit")
-	flag.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")
-	flag.Parse()
+func parseFlags(args []string, c *config.Agent) {
+	fs := flag.NewFlagSet(args[0], flag.PanicOnError)
+	fs.SetOutput(os.Stdout)
+	fs.StringVar(&c.CollectorAddress, "a", "127.0.0.1:8080", "address server endpoint")
+	fs.Int64Var(&c.PollInterval, "p", 2, "Pool interval (seconds)")
+	fs.Int64Var(&c.ReportInterval, "r", 10, "Report interval (seconds)")
+	fs.Int64Var(&c.RateLimit, "l", 1, "Rate limit")
+	fs.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")
+	if err := fs.Parse(args[1:]); err != nil {
+		panic(err.Error())
+	}
 
 	var err error
 	if v := os.Getenv("PROFILING"); v != "" {
