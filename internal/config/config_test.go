@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 )
 
 func TestNewConfig(t *testing.T) {
@@ -14,14 +14,14 @@ func TestNewConfig(t *testing.T) {
 	}{
 		{name: "create", want: &Config{
 			Agent: Agent{
-				Logger:           logger.Config{Level: "info"},
+				Logger:           log.Config{Level: "info"},
 				CollectorAddress: "127.0.0.1:8080",
 				PollInterval:     2,
 				ReportInterval:   10,
 				RateLimit:        1,
 			},
 			Server: Server{
-				Logger:  logger.Config{Level: "info"},
+				Logger:  log.Config{Level: "info"},
 				Address: ":8080",
 			},
 		}},
@@ -41,7 +41,7 @@ func TestNewServer(t *testing.T) {
 		name string
 	}{
 		{name: "create", want: &Server{
-			Logger:  logger.Config{Level: "info"},
+			Logger:  log.Config{Level: "info"},
 			Address: ":8080",
 		}},
 	}
@@ -60,7 +60,7 @@ func TestNewAgent(t *testing.T) {
 		name string
 	}{
 		{name: "create", want: &Agent{
-			Logger:           logger.Config{Level: "info"},
+			Logger:           log.Config{Level: "info"},
 			CollectorAddress: "127.0.0.1:8080",
 			PollInterval:     2,
 			ReportInterval:   10,

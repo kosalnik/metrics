@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/sirupsen/logrus"
+	"github.com/kosalnik/metrics/internal/log"
 )
 
-type Build struct {
+type VersionInfo struct {
 	BuildVersion string
 	BuildDate    string
 	BuildCommit  string
@@ -18,14 +18,14 @@ Build date: %s
 Build commit: %s
 `
 
-func (b Build) Print(w io.Writer) {
+func (b VersionInfo) Print(w io.Writer) {
 	p := []any{
 		val(b.BuildVersion),
 		val(b.BuildDate),
 		val(b.BuildCommit),
 	}
 	if _, err := fmt.Fprintf(w, hello, p...); err != nil {
-		logrus.WithError(err).Error("Fail to print the build version")
+		log.Error().Err(err).Msg("Fail to print the build version")
 	}
 }
 

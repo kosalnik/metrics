@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/metric"
 	"github.com/kosalnik/metrics/internal/models"
 )
@@ -36,9 +36,11 @@ func NewClient(ctx context.Context, config config.Agent) *Client {
 }
 
 func (c *Client) Run(ctx context.Context) {
-	logger.Logger.Infof("Poll interval: %d", c.config.PollInterval)
-	logger.Logger.Infof("Report interval: %d", c.config.ReportInterval)
-	logger.Logger.Infof("Collector address: %s", c.config.CollectorAddress)
+	log.Info().
+		Int64("Poll interval", c.config.PollInterval).
+		Int64("Report interval", c.config.ReportInterval).
+		Str("Collector address", c.config.CollectorAddress).
+		Msg("Running agent")
 	go c.poll(ctx)
 	c.push(ctx)
 }
@@ -51,9 +53,9 @@ func (c *Client) push(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-tick.C:
-			logger.Logger.Info("Push")
+			log.Info().Msg("Push")
 			if err := c.sender.SendBatch(ctx, c.collectMetrics()); err != nil {
-				logger.Logger.WithError(err).Error("fail push")
+				log.Error().Err(err).Msg("fail push")
 			}
 		}
 	}
@@ -92,7 +94,7 @@ func (c *Client) poll(ctx context.Context) {
 			return
 		case <-tick.C:
 			if err := c.pollMetrics(ctx); err != nil {
-				logger.Logger.WithError(err).Errorf("poll error")
+				log.Error().Err(err).Msg("poll error")
 			}
 		}
 	}
@@ -107,7 +109,7 @@ func (c *Client) pollMetrics(ctx context.Context) error {
 		return err
 	}
 	c.pollCount = c.pollCount + 1
-	logger.Logger.WithField("count", c.pollCount).Debug("PollCount")
+	log.Debug().Int64("count", c.pollCount).Msg("PollCount")
 
 	return nil
 }

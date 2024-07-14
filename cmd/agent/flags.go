@@ -8,13 +8,20 @@ import (
 	"github.com/kosalnik/metrics/internal/config"
 )
 
+const (
+	defaultCollectorAddress = "127.0.0.1:8080"
+	defaultPollInterval     = 2
+	defaultReportInterval   = 10
+	defaultRateLimit        = 1
+)
+
 func parseFlags(args []string, c *config.Agent) {
 	fs := flag.NewFlagSet(args[0], flag.PanicOnError)
 	fs.SetOutput(os.Stdout)
-	fs.StringVar(&c.CollectorAddress, "a", "127.0.0.1:8080", "address server endpoint")
-	fs.Int64Var(&c.PollInterval, "p", 2, "Pool interval (seconds)")
-	fs.Int64Var(&c.ReportInterval, "r", 10, "Report interval (seconds)")
-	fs.Int64Var(&c.RateLimit, "l", 1, "Rate limit")
+	fs.StringVar(&c.CollectorAddress, "a", defaultCollectorAddress, "address server endpoint")
+	fs.Int64Var(&c.PollInterval, "p", defaultPollInterval, "Pool interval (seconds)")
+	fs.Int64Var(&c.ReportInterval, "r", defaultReportInterval, "Report interval (seconds)")
+	fs.Int64Var(&c.RateLimit, "l", defaultRateLimit, "Rate limit")
 	fs.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")
 	if err := fs.Parse(args[1:]); err != nil {
 		panic(err.Error())

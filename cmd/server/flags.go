@@ -8,12 +8,18 @@ import (
 	"github.com/kosalnik/metrics/internal/config"
 )
 
+const (
+	defaultAddress               = ":8080"
+	defaultStoreInterval         = 300
+	defaultBackupFileStoragePath = "/tmp/metrics-db.json"
+)
+
 func parseFlags(args []string, c *config.Server) {
 	fs := flag.NewFlagSet(args[0], flag.PanicOnError)
 	fs.SetOutput(os.Stdout)
-	fs.StringVar(&c.Address, "a", ":8080", "server endpoint (ip:port)")
-	fs.IntVar(&c.Backup.StoreInterval, "i", 300, "Store interval")
-	fs.StringVar(&c.Backup.FileStoragePath, "f", "/tmp/metrics-db.json", "File storage path")
+	fs.StringVar(&c.Address, "a", defaultAddress, "server endpoint (ip:port)")
+	fs.IntVar(&c.Backup.StoreInterval, "i", defaultStoreInterval, "Store interval")
+	fs.StringVar(&c.Backup.FileStoragePath, "f", defaultBackupFileStoragePath, "File storage path")
 	fs.BoolVar(&c.Backup.Restore, "r", true, "Restore storage before start")
 	fs.StringVar(&c.DB.DSN, "d", "", "Database DSN")
 	fs.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")

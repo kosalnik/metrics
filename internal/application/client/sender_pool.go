@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/models"
 )
 
@@ -21,7 +21,7 @@ func NewSenderPool(ctx context.Context, client Sender, num int) *SenderPool {
 	}
 
 	for w := 1; w <= int(num); w++ {
-		logger.Logger.Infof("Start worker %d", w)
+		log.Info().Int("id", w).Msg("Start worker")
 		go p.worker(p.jobs)
 	}
 
@@ -46,10 +46,10 @@ func (p *SenderPool) SendCounter(k string, v int64) {
 }
 
 func (p *SenderPool) SendBatch(ctx context.Context, list []models.Metrics) error {
-	logger.Logger.Debug("Push job")
+	log.Debug().Msg("Push job")
 	p.jobs <- func() {
 		if err := p.client.SendBatch(ctx, list); err != nil {
-			logger.Logger.WithError(err).Error("Send batch failed")
+			log.Error().Err(err).Msg("Send batch failed")
 		}
 	}
 
@@ -58,8 +58,8 @@ func (p *SenderPool) SendBatch(ctx context.Context, list []models.Metrics) error
 
 func (*SenderPool) worker(jobs <-chan func()) {
 	for f := range jobs {
-		logger.Logger.Debug("worker receive job")
+		log.Debug().Msg("worker receive job")
 		f()
 	}
-	logger.Logger.Info("Stop worker")
+	log.Info().Msg("Stop worker")
 }

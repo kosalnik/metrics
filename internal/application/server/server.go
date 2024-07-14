@@ -15,7 +15,7 @@ import (
 	"github.com/kosalnik/metrics/internal/config"
 	"github.com/kosalnik/metrics/internal/crypt"
 	"github.com/kosalnik/metrics/internal/handlers"
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/memstorage"
 	"github.com/kosalnik/metrics/internal/postgres"
 	"github.com/kosalnik/metrics/internal/storage"
@@ -41,11 +41,11 @@ func (app *App) Run(ctx context.Context) error {
 	}
 	defer func() {
 		if err := app.Storage.Close(); err != nil {
-			logger.Logger.WithError(err).Errorf("unable to close storage")
+			log.Error().Err(err).Msg("unable to close storage")
 		}
 	}()
 
-	logger.Logger.Info("Listen " + app.config.Address)
+	log.Info().Str("address", app.config.Address).Msg("Listen")
 
 	return http.ListenAndServe(app.config.Address, app.GetRouter())
 }
@@ -69,7 +69,7 @@ func (app *App) initDB(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := dbs.InitTables(ctx); err != nil {
+	if err := dbs.CreateTablesIfNotExist(ctx); err != nil {
 		return err
 	}
 	app.Storage = dbs
@@ -90,7 +90,7 @@ func (app *App) initBackup(ctx context.Context) error {
 		}
 	}
 
-	logger.Logger.Info("schedule backup")
+	log.Info().Msg("schedule backup")
 	go bm.BackupLoop(ctx)
 
 	return nil

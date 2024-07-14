@@ -6,9 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/storage"
 
 	"github.com/kosalnik/metrics/internal/models"
@@ -66,7 +64,7 @@ func (m *MemStorage) IncCounter(_ context.Context, name string, value int64) (*m
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	v := m.counter[name] + value
-	logger.Logger.WithFields(logrus.Fields{"k": name, "old": m.counter[name], "new": v}).Info("IncCounter")
+	log.Info().Str("k", name).Int64("old", m.counter[name]).Int64("new", v).Msg("IncCounter")
 	m.counter[name] = v
 	m.updatedAt = time.Now()
 
@@ -79,7 +77,7 @@ func (m *MemStorage) UpsertAll(_ context.Context, list []models.Metrics) error {
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	logger.Logger.WithField("list", list).Info("upsertAll")
+	log.Info().Any("list", list).Msg("upsertAll")
 	for _, v := range list {
 		switch v.MType {
 		case models.MGauge:

@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/models"
 	"github.com/kosalnik/metrics/internal/storage"
 )
@@ -18,7 +18,7 @@ func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *
 	return func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "application/json")
 		data, err := io.ReadAll(req.Body)
-		logger.Logger.Debugf("Handle %s", data)
+		log.Debug().Str("data", string(data)).Msg("Handle update")
 		if err != nil {
 			http.Error(res, `"Wrong data"`, http.StatusBadRequest)
 			return
@@ -64,7 +64,10 @@ func NewUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 		mType := models.MType(chi.URLParam(req, "type"))
 		mName := chi.URLParam(req, "name")
 		mVal := chi.URLParam(req, "value")
-		logger.Logger.Debugf("Handle %s[%s]=%s", mType, mName, mVal)
+		log.Debug().
+			Str("type", string(mType)).
+			Str("name", mName).
+			Str("val", mVal).Msg("Handle update")
 		switch mType {
 		case models.MGauge:
 			v, err := strconv.ParseFloat(mVal, 64)
@@ -79,7 +82,7 @@ func NewUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 				return
 			}
 			if _, err := res.Write([]byte(fmt.Sprintf("%f", r.Value))); err != nil {
-				logger.Logger.WithError(err).Error("fail write response")
+				log.Error().Err(err).Msg("fail write response")
 			}
 
 			return
@@ -91,12 +94,12 @@ func NewUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 			}
 			r, err := s.IncCounter(req.Context(), mName, v)
 			if err != nil {
-				logger.Logger.WithError(err).Error("fail inc counter")
+				log.Error().Err(err).Msg("fail inc counter")
 				http.Error(res, `"fail inc counter"`, http.StatusInternalServerError)
 				return
 			}
 			if _, err := res.Write([]byte(fmt.Sprintf("%d", r.Delta))); err != nil {
-				logger.Logger.WithError(err).Error("fail write response")
+				log.Error().Err(err).Msg("fail write response")
 			}
 
 			return

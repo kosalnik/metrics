@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/models"
 	"github.com/kosalnik/metrics/internal/storage"
 )
@@ -64,7 +64,7 @@ func NewBackupManager(s Storage, cfg Config) (*BackupManager, error) {
 
 func (m *BackupManager) BackupLoop(ctx context.Context) {
 	if m == nil || m.dump == nil || m.backupInterval == 0 {
-		logger.Logger.Info("schedule backup skipped")
+		log.Info().Msg("schedule backup skipped")
 		return
 	}
 
@@ -74,16 +74,16 @@ func (m *BackupManager) BackupLoop(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Logger.Info("backup loop: context done")
+			log.Info().Msg("backup loop: context done")
 			return
 		case <-tick.C:
 			if m.lastBackup.Equal(m.storage.UpdatedAt()) {
-				logger.Logger.Debug("backup loop: no changes, skip backup")
+				log.Debug().Msg("backup loop: no changes, skip backup")
 				continue
 			}
-			logger.Logger.Info("backup loop: store")
+			log.Info().Msg("backup loop: store")
 			if err := m.dump.Store(ctx); err != nil {
-				logger.Logger.WithError(err).Error("Fail backup")
+				log.Error().Err(err).Msg("Fail backup")
 			}
 		}
 	}
@@ -92,11 +92,11 @@ func (m *BackupManager) BackupLoop(ctx context.Context) {
 // Recover - восстановить данные из бекапа.
 func (m *BackupManager) Recover(ctx context.Context) error {
 	if m == nil || m.recover == nil {
-		logger.Logger.Info("recover skipped")
+		log.Info().Msg("recover skipped")
 
 		return nil
 	}
 
-	logger.Logger.Info("recover start")
+	log.Info().Msg("recover start")
 	return m.recover.Recover(ctx)
 }

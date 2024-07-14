@@ -9,7 +9,7 @@ import (
 
 	"github.com/kosalnik/metrics/internal/application/client"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/version"
 )
 
@@ -20,14 +20,14 @@ var (
 )
 
 func main() {
-	version.Build{
+	version.VersionInfo{
 		BuildVersion: buildVersion,
 		BuildDate:    buildDate,
 		BuildCommit:  buildCommit,
 	}.Print(os.Stdout)
 	cfg := config.NewConfig()
 	parseFlags(os.Args, &cfg.Agent)
-	if err := logger.InitLogger(cfg.Agent.Logger.Level); err != nil {
+	if err := log.InitLogger(cfg.Agent.Logger.Level); err != nil {
 		panic(err.Error())
 	}
 	if cfg.Agent.Profiling.Enabled {

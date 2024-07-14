@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 )
 
 func HashCheckMiddleware(cfg Config) func(next http.Handler) http.Handler {
@@ -19,7 +19,7 @@ func HashCheckMiddleware(cfg Config) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
 				expectedHash := ExtractSign(r)
-				logger.Logger.WithField("hash", expectedHash).Debug("Get Hash Header")
+				log.Debug().Str("hash", expectedHash).Msg("Get Hash Header")
 
 				if expectedHash != "" {
 					defer r.Body.Close()

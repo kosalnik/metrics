@@ -5,7 +5,7 @@ package config
 import (
 	"github.com/kosalnik/metrics/internal/backup"
 	"github.com/kosalnik/metrics/internal/crypt"
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 )
 
 type Config struct {
@@ -16,7 +16,7 @@ type Config struct {
 type Agent struct {
 	CollectorAddress string
 	Hash             crypt.Config
-	Logger           logger.Config
+	Logger           log.Config
 	PollInterval     int64
 	ReportInterval   int64
 	RateLimit        int64
@@ -24,7 +24,7 @@ type Agent struct {
 }
 
 type Server struct {
-	Logger    logger.Config
+	Logger    log.Config
 	DB        DB
 	Hash      crypt.Config
 	Address   string
@@ -44,7 +44,7 @@ func NewConfig() *Config {
 	return &Config{
 		Agent: Agent{
 			Profiling:        Profiling{},
-			Logger:           logger.Config{Level: "info"},
+			Logger:           log.Config{Level: "info"},
 			CollectorAddress: "127.0.0.1:8080",
 			PollInterval:     2,
 			ReportInterval:   10,
@@ -53,7 +53,7 @@ func NewConfig() *Config {
 		},
 		Server: Server{
 			Profiling: Profiling{},
-			Logger:    logger.Config{Level: "info"},
+			Logger:    log.Config{Level: "info"},
 			Address:   ":8080",
 			Backup:    backup.Config{},
 			Hash:      crypt.Config{Key: ""},
@@ -64,7 +64,7 @@ func NewConfig() *Config {
 func NewAgent() *Agent {
 	return &Agent{
 		Profiling:        Profiling{},
-		Logger:           logger.Config{Level: "info"},
+		Logger:           log.Config{Level: "info"},
 		CollectorAddress: "127.0.0.1:8080",
 		PollInterval:     2,
 		ReportInterval:   10,
@@ -76,7 +76,7 @@ func NewAgent() *Agent {
 func NewServer() *Server {
 	return &Server{
 		Profiling: Profiling{},
-		Logger:    logger.Config{Level: "info"},
+		Logger:    log.Config{Level: "info"},
 		Address:   ":8080",
 		Backup:    backup.Config{},
 		Hash:      crypt.Config{Key: ""},

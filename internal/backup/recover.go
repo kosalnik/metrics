@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/storage"
 )
 
@@ -26,7 +26,7 @@ func NewRecover(storage storage.BatchInserter, path string) *Recover {
 // Recover - Восстановить Storage из бекапа.
 func (m *Recover) Recover(ctx context.Context) error {
 	if m == nil || m.path == "" {
-		logger.Logger.Info("Recover skipped. No Path or Disabled")
+		log.Info().Msg("Recover skipped. No Path or Disabled")
 
 		return nil
 	}

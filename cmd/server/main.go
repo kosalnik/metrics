@@ -7,7 +7,7 @@ import (
 
 	"github.com/kosalnik/metrics/internal/application/server"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/version"
 )
 
@@ -18,7 +18,7 @@ var (
 )
 
 func main() {
-	version.Build{
+	version.VersionInfo{
 		BuildVersion: buildVersion,
 		BuildDate:    buildDate,
 		BuildCommit:  buildCommit,
@@ -26,7 +26,7 @@ func main() {
 	cfg := config.NewConfig()
 	parseFlags(os.Args, &cfg.Server)
 	app := server.NewApp(cfg.Server)
-	if err := logger.InitLogger(cfg.Server.Logger.Level); err != nil {
+	if err := log.InitLogger(cfg.Server.Logger.Level); err != nil {
 		panic(err.Error())
 	}
 	err := app.Run(context.Background())
