@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/kosalnik/metrics/internal/crypt/mock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/kosalnik/metrics/internal/crypt"
@@ -55,10 +56,13 @@ func TestCipherMiddleware(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, `/`, strings.NewReader(tt.encodedBody))
 			w := httptest.NewRecorder()
 			h.ServeHTTP(w, r)
+			res := w.Result()
+			defer assert.NoError(t, res.Body.Close())
 			if tt.wantErr {
-				require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+				require.Equal(t, http.StatusBadRequest, res.StatusCode)
+
 			} else {
-				require.Equal(t, http.StatusOK, w.Result().StatusCode)
+				require.Equal(t, http.StatusOK, res.StatusCode)
 			}
 		})
 	}
