@@ -8,14 +8,18 @@ import (
 	"github.com/kosalnik/metrics/internal/config"
 )
 
-func parseFlags(c *config.Server) {
-	flag.StringVar(&c.Address, "a", ":8080", "server endpoint (ip:port)")
-	flag.IntVar(&c.Backup.StoreInterval, "i", 300, "Store interval")
-	flag.StringVar(&c.Backup.FileStoragePath, "f", "/tmp/metrics-db.json", "File storage path")
-	flag.BoolVar(&c.Backup.Restore, "r", true, "Restore storage before start")
-	flag.StringVar(&c.DB.DSN, "d", "", "Database DSN")
-	flag.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")
-	flag.Parse()
+func parseFlags(args []string, c *config.Server) {
+	fs := flag.NewFlagSet(args[0], flag.PanicOnError)
+	fs.SetOutput(os.Stdout)
+	fs.StringVar(&c.Address, "a", ":8080", "server endpoint (ip:port)")
+	fs.IntVar(&c.Backup.StoreInterval, "i", 300, "Store interval")
+	fs.StringVar(&c.Backup.FileStoragePath, "f", "/tmp/metrics-db.json", "File storage path")
+	fs.BoolVar(&c.Backup.Restore, "r", true, "Restore storage before start")
+	fs.StringVar(&c.DB.DSN, "d", "", "Database DSN")
+	fs.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")
+	if err := fs.Parse(args[1:]); err != nil {
+		panic(err.Error())
+	}
 	var err error
 	if v := os.Getenv("PROFILING"); v != "" {
 		c.Profiling.Enabled, err = strconv.ParseBool(v)

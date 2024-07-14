@@ -1,3 +1,6 @@
+// Package server - пакет с реализацией сервера сбора метрик.
+// При старте методом App.Run() пытается восстановить storage из бекапа, затем периодически сбрасывает storage в бекап.
+// Запускает инстанс http.Server, который принимает метрики от внешнего сервиса.
 package server
 
 import (
@@ -7,16 +10,15 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/jackc/pgx/v5/stdlib"
 
+	"github.com/kosalnik/metrics/internal/backup"
 	"github.com/kosalnik/metrics/internal/config"
+	"github.com/kosalnik/metrics/internal/crypt"
 	"github.com/kosalnik/metrics/internal/handlers"
-	"github.com/kosalnik/metrics/internal/infra/backup"
-	"github.com/kosalnik/metrics/internal/infra/crypt"
-	"github.com/kosalnik/metrics/internal/infra/logger"
-	"github.com/kosalnik/metrics/internal/infra/memstorage"
-	"github.com/kosalnik/metrics/internal/infra/postgres"
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/memstorage"
+	"github.com/kosalnik/metrics/internal/postgres"
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 type App struct {
@@ -25,7 +27,6 @@ type App struct {
 }
 
 func NewApp(cfg config.Server) *App {
-
 	return &App{
 		config: cfg,
 	}
@@ -60,15 +61,23 @@ func (app *App) initStorage(ctx context.Context) error {
 }
 
 func (app *App) initDB(ctx context.Context) error {
-	db, err := postgres.NewDB(ctx, app.config.DB)
+	db, err := postgres.NewConn(app.config.DB.DSN)
 	if err != nil {
 		return err
 	}
-	app.Storage = db
-
+	dbs, err := postgres.NewDBStorage(db)
+	if err != nil {
+		return err
+	}
+	if err := dbs.InitTables(ctx); err != nil {
+		return err
+	}
+	app.Storage = dbs
 	return nil
 }
 
+// ScheduleBackup - запустить автоматический бекап по расписанию.
+// Будет скидывать бекап на диск через равные промежутки времени.
 func (app *App) initBackup(ctx context.Context) error {
 	var err error
 	bm, err := backup.NewBackupManager(app.Storage, app.config.Backup)
@@ -80,9 +89,9 @@ func (app *App) initBackup(ctx context.Context) error {
 			return err
 		}
 	}
-	if err = bm.ScheduleBackup(ctx); err != nil {
-		return err
-	}
+
+	logger.Logger.Info("schedule backup")
+	go bm.BackupLoop(ctx)
 
 	return nil
 }

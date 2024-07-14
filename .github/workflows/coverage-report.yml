@@ -1,0 +1,40 @@
+name: coverage-report
+on:
+  pull_request:
+  push:
+
+jobs:
+  coveragereport:
+    runs-on: ubuntu-latest
+
+    services:
+      postgresql:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Test
+      env:
+        TEST_DSN: postgres://postgres:postgres@localhost:5432/test?sslmode=disable
+      run: go test -coverprofile ./c.out  $(go list ./... | grep -v /mock/)
+
+    - name: Update coverage report
+      uses: ncruces/go-coverage-report@v0
+      with:
+        coverage-file: ./c.out
+        report: true
+        chart: true
+        amend: true
+      continue-on-error: true

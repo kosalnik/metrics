@@ -3,18 +3,30 @@ package main
 
 import (
 	"context"
-	_ "net/http/pprof"
+	"os"
 
 	"github.com/kosalnik/metrics/internal/application/server"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/version"
+)
+
+var (
+	buildVersion string
+	buildDate    string
+	buildCommit  string
 )
 
 func main() {
+	version.Build{
+		BuildVersion: buildVersion,
+		BuildDate:    buildDate,
+		BuildCommit:  buildCommit,
+	}.Print(os.Stdout)
 	cfg := config.NewConfig()
-	parseFlags(&cfg.Server)
+	parseFlags(os.Args, &cfg.Server)
 	app := server.NewApp(cfg.Server)
-	if err := logger.InitLogger(cfg.Server.Logger); err != nil {
+	if err := logger.InitLogger(cfg.Server.Logger.Level); err != nil {
 		panic(err.Error())
 	}
 	err := app.Run(context.Background())

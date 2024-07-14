@@ -1,17 +1,22 @@
 package models
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
 
 func TestMetrics_String(t *testing.T) {
 	type fields struct {
-		ID    string
 		MType MType
+		ID    string
 		Delta int64
 		Value float64
 	}
 	tests := map[string]struct {
-		fields fields
 		want   string
+		fields fields
 	}{
 		"counter": {
 			fields: fields{ID: "zxc", MType: "counter", Delta: 10},
@@ -37,6 +42,24 @@ func TestMetrics_String(t *testing.T) {
 			if got := m.String(); got != tt.want {
 				t.Errorf("String() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestMetrics_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name string
+		obj  *Metrics
+		want string
+	}{
+		{name: "Gauge", obj: &Metrics{ID: "aa", MType: MGauge, Value: 2.14}, want: `{"id":"aa","type":"gauge","value":2.14}`},
+		{name: "Counter", obj: &Metrics{ID: "bb", MType: MCounter, Delta: 3}, want: `{"id":"bb","type":"counter","delta":3}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.obj.MarshalJSON()
+			require.NoError(t, err)
+			assert.JSONEq(t, tt.want, string(got))
 		})
 	}
 }

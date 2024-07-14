@@ -1,3 +1,7 @@
+// Package client содержит реализацию клиента к коллектору метрик.
+// Создаётся с использованием NewClient(). Запускается методом Run().
+// При старте запускает два параллельных цикла. Один собирает метрики раз в PoolInterval секунд.
+// Второй цикл отсылает собранные в последний раз метрики коллектору раз в ReportInterval секунд.
 package client
 
 import (
@@ -7,17 +11,17 @@ import (
 	"time"
 
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/infra/logger"
-	"github.com/kosalnik/metrics/internal/infra/metric"
+	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/metric"
 	"github.com/kosalnik/metrics/internal/models"
 )
 
 type Client struct {
-	mu        sync.Mutex
 	sender    Sender
 	config    *config.Agent
 	gauge     map[string]float64
 	pollCount int64
+	mu        sync.Mutex
 }
 
 func NewClient(ctx context.Context, config config.Agent) *Client {

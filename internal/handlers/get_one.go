@@ -8,9 +8,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/kosalnik/metrics/internal/infra/logger"
-	"github.com/kosalnik/metrics/internal/infra/storage"
+	"github.com/kosalnik/metrics/internal/logger"
 	"github.com/kosalnik/metrics/internal/models"
+	"github.com/kosalnik/metrics/internal/storage"
 )
 
 func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
@@ -35,8 +35,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 				return
 			}
 			if v == nil {
-				http.NotFound(w, req)
-				return
+				break
 			}
 			if out, err := json.Marshal(v); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)
@@ -52,8 +51,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 				return
 			}
 			if v == nil {
-				http.NotFound(w, req)
-				return
+				break
 			}
 			if out, err := json.Marshal(v); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)

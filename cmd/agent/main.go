@@ -5,16 +5,29 @@ import (
 	"context"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 
 	"github.com/kosalnik/metrics/internal/application/client"
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/infra/logger"
+	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/version"
+)
+
+var (
+	buildVersion string
+	buildDate    string
+	buildCommit  string
 )
 
 func main() {
+	version.Build{
+		BuildVersion: buildVersion,
+		BuildDate:    buildDate,
+		BuildCommit:  buildCommit,
+	}.Print(os.Stdout)
 	cfg := config.NewConfig()
-	parseFlags(&cfg.Agent)
-	if err := logger.InitLogger(cfg.Agent.Logger); err != nil {
+	parseFlags(os.Args, &cfg.Agent)
+	if err := logger.InitLogger(cfg.Agent.Logger.Level); err != nil {
 		panic(err.Error())
 	}
 	if cfg.Agent.Profiling.Enabled {
