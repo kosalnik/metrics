@@ -24,13 +24,15 @@ func main() {
 		BuildCommit:  buildCommit,
 	}.Print(os.Stdout)
 	cfg := config.NewConfig()
-	config.ParseServerFlags(os.Args, &cfg.Server)
+	if err := config.ParseServerFlags(os.Args, &cfg.Server); err != nil {
+		panic(err.Error())
+	}
 	app := server.NewApp(cfg.Server)
 	if err := log.InitLogger(cfg.Server.Logger.Level); err != nil {
 		panic(err.Error())
 	}
 	err := app.Run(context.Background())
 	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("panic")
 	}
 }

@@ -26,7 +26,9 @@ func main() {
 		BuildCommit:  buildCommit,
 	}.Print(os.Stdout)
 	cfg := config.NewConfig()
-	config.ParseAgentFlags(os.Args, &cfg.Agent)
+	if err := config.ParseAgentFlags(os.Args, &cfg.Agent); err != nil {
+		panic(err.Error())
+	}
 	if err := log.InitLogger(cfg.Agent.Logger.Level); err != nil {
 		panic(err.Error())
 	}

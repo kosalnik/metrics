@@ -1,7 +1,7 @@
 package backup
 
 type Config struct {
-	FileStoragePath string
-	StoreInterval   int
-	Restore         bool
+	FileStoragePath string `json:"store_file"`
+	StoreInterval   int    `json:"store_interval"`
+	Restore         bool   `json:"restore"`
 }

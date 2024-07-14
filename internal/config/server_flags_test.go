@@ -10,10 +10,11 @@ import (
 
 func Test_parseServerFlags(t *testing.T) {
 	cases := []struct {
-		name  string
-		flags []string
-		env   map[string]string
-		want  func(c *Server)
+		name    string
+		flags   []string
+		env     map[string]string
+		want    func(c *Server)
+		wantErr bool
 	}{
 		{
 			name:  "Address in flag",
@@ -129,14 +130,14 @@ func Test_parseServerFlags(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c := NewServer()
 			if tt.env == nil {
-				ParseServerFlags(tt.flags, c)
+				require.NoError(t, ParseServerFlags(tt.flags, c))
 			} else {
 				old := make(map[string]string, len(tt.env))
 				for k, v := range tt.env {
 					old[k] = os.Getenv(k)
 					require.NoError(t, os.Setenv(k, v))
 				}
-				ParseServerFlags(tt.flags, c)
+				require.NoError(t, ParseServerFlags(tt.flags, c))
 				for k, v := range old {
 					require.NoError(t, os.Setenv(k, v))
 				}

@@ -4,10 +4,19 @@ package config
 
 import (
 	"crypto/rsa"
+	_ "embed"
 
 	"github.com/kosalnik/metrics/internal/backup"
 	"github.com/kosalnik/metrics/internal/crypt"
 	"github.com/kosalnik/metrics/internal/log"
+)
+
+const (
+	defaultServerBind       = ":8080"
+	defaultCollectorAddress = "127.0.0.1:8080"
+	defaultPollInterval     = 2
+	defaultReportInterval   = 10
+	defaultRateLimit        = 1
 )
 
 type Config struct {
@@ -16,24 +25,24 @@ type Config struct {
 }
 
 type Agent struct {
-	CollectorAddress string
+	CollectorAddress string         `json:"address"`
+	PollInterval     int64          `json:"poll_interval"`
+	ReportInterval   int64          `json:"report_interval"`
+	PublicKey        *rsa.PublicKey `json:"crypto_key"`
+	RateLimit        int64          `json:"rate_limit"`
 	Hash             crypt.Config
 	Logger           log.Config
-	PollInterval     int64
-	ReportInterval   int64
-	RateLimit        int64
 	Profiling        Profiling
-	PublicKey        *rsa.PublicKey
 }
 
 type Server struct {
+	Address    string          `json:"address"`
+	Backup     backup.Config   `json:"backup"`
+	PrivateKey *rsa.PrivateKey `json:"crypto_key"`
 	Logger     log.Config
 	DB         DB
 	Hash       crypt.Config
-	Address    string
-	Backup     backup.Config
 	Profiling  Profiling
-	PrivateKey *rsa.PrivateKey
 }
 
 type Profiling struct {
@@ -58,7 +67,7 @@ func NewConfig() *Config {
 		Server: Server{
 			Profiling: Profiling{},
 			Logger:    log.Config{Level: "info"},
-			Address:   ":8080",
+			Address:   defaultServerBind,
 			Backup:    backup.Config{},
 			Hash:      crypt.Config{Key: ""},
 		},
@@ -69,11 +78,11 @@ func NewAgent() *Agent {
 	return &Agent{
 		Profiling:        Profiling{},
 		Logger:           log.Config{Level: "info"},
-		CollectorAddress: "127.0.0.1:8080",
-		PollInterval:     2,
-		ReportInterval:   10,
+		CollectorAddress: defaultCollectorAddress,
+		PollInterval:     defaultPollInterval,
+		ReportInterval:   defaultReportInterval,
 		Hash:             crypt.Config{Key: ""},
-		RateLimit:        1,
+		RateLimit:        defaultRateLimit,
 	}
 }
 
