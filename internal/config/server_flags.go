@@ -7,9 +7,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"sync"
-
-	"github.com/kosalnik/metrics/internal/log"
 )
 
 const (
@@ -32,21 +29,7 @@ func ParseServerFlags(args []string, c *Server) error {
 	_ = fs.String("c", "", "Config file (shorthand)")
 
 	var err error
-	fs.Visit(func(f *flag.Flag) {
-		if (f.Name == "config" || f.Name == "c") && f.Value.String() != "" {
-			filename := f.Value.String()
-			sync.OnceFunc(func() {
-				log.Debug().Str("path", filename).Msg("Load config from file")
-				var fl *os.File
-				fl, err = os.Open(filename)
-				if err != nil {
-					return
-				}
-				err = LoadConfigFromFile(fl, c)
-			})
-		}
-	})
-	if err != nil {
+	if err = loadFromConfigFile(fs, c); err != nil {
 		return err
 	}
 
