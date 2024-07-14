@@ -1,11 +1,9 @@
-package main
+package config
 
 import (
 	"flag"
 	"os"
 	"strconv"
-
-	"github.com/kosalnik/metrics/internal/config"
 )
 
 const (
@@ -14,7 +12,7 @@ const (
 	defaultBackupFileStoragePath = "/tmp/metrics-db.json"
 )
 
-func parseFlags(args []string, c *config.Server) {
+func ParseServerFlags(args []string, c *Server) {
 	fs := flag.NewFlagSet(args[0], flag.PanicOnError)
 	fs.SetOutput(os.Stdout)
 	fs.StringVar(&c.Address, "a", defaultAddress, "server endpoint (ip:port)")

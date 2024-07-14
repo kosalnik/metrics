@@ -1,11 +1,9 @@
-package main
+package config
 
 import (
 	"flag"
 	"os"
 	"strconv"
-
-	"github.com/kosalnik/metrics/internal/config"
 )
 
 const (
@@ -15,7 +13,7 @@ const (
 	defaultRateLimit        = 1
 )
 
-func parseFlags(args []string, c *config.Agent) {
+func ParseAgentFlags(args []string, c *Agent) {
 	fs := flag.NewFlagSet(args[0], flag.PanicOnError)
 	fs.SetOutput(os.Stdout)
 	fs.StringVar(&c.CollectorAddress, "a", defaultCollectorAddress, "address server endpoint")

@@ -24,7 +24,7 @@ func main() {
 		BuildCommit:  buildCommit,
 	}.Print(os.Stdout)
 	cfg := config.NewConfig()
-	parseFlags(os.Args, &cfg.Server)
+	config.ParseServerFlags(os.Args, &cfg.Server)
 	app := server.NewApp(cfg.Server)
 	if err := log.InitLogger(cfg.Server.Logger.Level); err != nil {
 		panic(err.Error())
