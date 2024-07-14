@@ -1,6 +1,9 @@
 package config
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"flag"
 	"os"
 	"strconv"
@@ -14,6 +17,7 @@ const (
 )
 
 func ParseAgentFlags(args []string, c *Agent) {
+	var publicKeyFile string
 	fs := flag.NewFlagSet(args[0], flag.PanicOnError)
 	fs.SetOutput(os.Stdout)
 	fs.StringVar(&c.CollectorAddress, "a", defaultCollectorAddress, "address server endpoint")
@@ -21,6 +25,7 @@ func ParseAgentFlags(args []string, c *Agent) {
 	fs.Int64Var(&c.ReportInterval, "r", defaultReportInterval, "Report interval (seconds)")
 	fs.Int64Var(&c.RateLimit, "l", defaultRateLimit, "Rate limit")
 	fs.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")
+	fs.StringVar(&publicKeyFile, "crypto-key", "", "Public Key")
 	if err := fs.Parse(args[1:]); err != nil {
 		panic(err.Error())
 	}
@@ -55,5 +60,21 @@ func ParseAgentFlags(args []string, c *Agent) {
 	}
 	if v := os.Getenv("KEY"); v != "" {
 		c.Hash.Key = v
+	}
+	if v := os.Getenv("CRYPTO_KEY"); v != "" {
+		publicKeyFile = v
+	}
+
+	if publicKeyFile != "" {
+		publicKeyPEM, err := os.ReadFile(publicKeyFile)
+		if err != nil {
+			panic(err)
+		}
+		publicKeyBlock, _ := pem.Decode(publicKeyPEM)
+		publicKey, err := x509.ParsePKIXPublicKey(publicKeyBlock.Bytes)
+		if err != nil {
+			panic(err)
+		}
+		c.PublicKey = publicKey.(*rsa.PublicKey)
 	}
 }

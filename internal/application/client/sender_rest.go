@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -21,7 +22,10 @@ type SenderRest struct {
 
 func NewSenderRest(config *config.Agent) Sender {
 	c := http.Client{
-		Transport: crypt.VerifyHashInterceptor(config.Hash, http.DefaultTransport),
+		Transport: crypt.NewCipherInterceptor(
+			crypt.NewEncoder(config.PublicKey, rand.Reader),
+			crypt.VerifyHashInterceptor(config.Hash, http.DefaultTransport),
+		),
 	}
 	return &SenderRest{
 		client: &c,

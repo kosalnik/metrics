@@ -3,6 +3,8 @@
 package config
 
 import (
+	"crypto/rsa"
+
 	"github.com/kosalnik/metrics/internal/backup"
 	"github.com/kosalnik/metrics/internal/crypt"
 	"github.com/kosalnik/metrics/internal/log"
@@ -21,15 +23,17 @@ type Agent struct {
 	ReportInterval   int64
 	RateLimit        int64
 	Profiling        Profiling
+	PublicKey        *rsa.PublicKey
 }
 
 type Server struct {
-	Logger    log.Config
-	DB        DB
-	Hash      crypt.Config
-	Address   string
-	Backup    backup.Config
-	Profiling Profiling
+	Logger     log.Config
+	DB         DB
+	Hash       crypt.Config
+	Address    string
+	Backup     backup.Config
+	Profiling  Profiling
+	PrivateKey *rsa.PrivateKey
 }
 
 type Profiling struct {

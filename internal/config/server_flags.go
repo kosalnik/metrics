@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"flag"
 	"os"
 	"strconv"
@@ -13,6 +15,7 @@ const (
 )
 
 func ParseServerFlags(args []string, c *Server) {
+	var privateKeyFile string
 	fs := flag.NewFlagSet(args[0], flag.PanicOnError)
 	fs.SetOutput(os.Stdout)
 	fs.StringVar(&c.Address, "a", defaultAddress, "server endpoint (ip:port)")
@@ -21,6 +24,7 @@ func ParseServerFlags(args []string, c *Server) {
 	fs.BoolVar(&c.Backup.Restore, "r", true, "Restore storage before start")
 	fs.StringVar(&c.DB.DSN, "d", "", "Database DSN")
 	fs.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")
+	fs.StringVar(&privateKeyFile, "crypto-key", "", "Private Key")
 	if err := fs.Parse(args[1:]); err != nil {
 		panic(err.Error())
 	}
@@ -54,5 +58,21 @@ func ParseServerFlags(args []string, c *Server) {
 	}
 	if v := os.Getenv("KEY"); v != "" {
 		c.Hash.Key = v
+	}
+	if v := os.Getenv("CRYPTO_KEY"); v != "" {
+		privateKeyFile = v
+	}
+
+	if privateKeyFile != "" {
+		privateKeyPEM, err := os.ReadFile(privateKeyFile)
+		if err != nil {
+			panic(err)
+		}
+		keyBlock, _ := pem.Decode(privateKeyPEM)
+		privateKey, err := x509.ParsePKCS1PrivateKey(keyBlock.Bytes)
+		if err != nil {
+			panic(err)
+		}
+		c.PrivateKey = privateKey
 	}
 }

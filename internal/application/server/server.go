@@ -5,6 +5,7 @@ package server
 
 import (
 	"context"
+	"crypto/rand"
 	"net/http"
 	"os"
 
@@ -99,6 +100,7 @@ func (app *App) initBackup(ctx context.Context) error {
 func (app *App) GetRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Use(
+		crypt.CipherMiddleware(crypt.NewDecoder(app.config.PrivateKey, rand.Reader)),
 		middleware.Compress(1, "application/json", "text/html"),
 		//gzipMiddleware,
 		middleware.Logger,
