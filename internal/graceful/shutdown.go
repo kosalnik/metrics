@@ -53,8 +53,9 @@ func (m *Manager) Run(ctx context.Context) {
 
 	g := new(errgroup.Group)
 	for i := range m.services {
+		s := m.services[i]
 		g.Go(func() error {
-			return m.runService(ctxNotify, m.services[i])
+			return m.runService(ctxNotify, s)
 		})
 	}
 
