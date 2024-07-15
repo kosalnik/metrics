@@ -14,6 +14,7 @@ import (
 	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/metric"
 	"github.com/kosalnik/metrics/internal/models"
+	"golang.org/x/sync/errgroup"
 )
 
 type Client struct {
@@ -35,23 +36,49 @@ func NewClient(ctx context.Context, config config.Agent) *Client {
 	}
 }
 
-func (c *Client) Run(ctx context.Context) {
+func (c *Client) Run(ctx context.Context) error {
+	g := errgroup.Group{}
+	g.Go(func() error {
+		return c.RunMetricsSender(ctx)
+	})
+	g.Go(func() error {
+		return c.RunMetricsPoller(ctx)
+	})
+	return g.Wait()
+}
+
+// RunMetricsSender Запустить процесс периодической отправки метрик в коллектор
+func (c *Client) RunMetricsSender(ctx context.Context) error {
 	log.Info().
-		Int64("Poll interval", c.config.PollInterval).
 		Int64("Report interval", c.config.ReportInterval).
 		Str("Collector address", c.config.CollectorAddress).
 		Msg("Running agent")
-	go c.poll(ctx)
-	c.push(ctx)
+	return c.push(ctx)
 }
 
-func (c *Client) push(ctx context.Context) {
+// RunMetricsPoller Запустить процесс периодического сбора метрик
+func (c *Client) RunMetricsPoller(ctx context.Context) error {
+	log.Info().
+		Int64("Poll interval", c.config.PollInterval).
+		Msg("Running metrics poll process")
+	return c.poll(ctx)
+}
+
+func (c *Client) Shutdown(ctx context.Context) {
+	log.Info().Msg("Shutdown service Client")
+	if err := c.sender.SendBatch(ctx, c.collectMetrics()); err != nil {
+		log.Error().Err(err).Msg("fail push")
+	}
+	log.Info().Msg("Shutdown service Client completed")
+}
+
+func (c *Client) push(ctx context.Context) error {
 	tick := time.NewTicker(time.Duration(c.config.ReportInterval) * time.Second)
 	defer tick.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return ctx.Err()
 		case <-tick.C:
 			log.Info().Msg("Push")
 			if err := c.sender.SendBatch(ctx, c.collectMetrics()); err != nil {
@@ -85,13 +112,13 @@ func (c *Client) collectMetrics() []models.Metrics {
 	return list
 }
 
-func (c *Client) poll(ctx context.Context) {
+func (c *Client) poll(ctx context.Context) error {
 	tick := time.NewTicker(time.Duration(c.config.PollInterval) * time.Second)
 	defer tick.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return ctx.Err()
 		case <-tick.C:
 			if err := c.pollMetrics(ctx); err != nil {
 				log.Error().Err(err).Msg("poll error")

@@ -6,9 +6,11 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"syscall"
 
 	"github.com/kosalnik/metrics/internal/application/client"
 	"github.com/kosalnik/metrics/internal/config"
+	"github.com/kosalnik/metrics/internal/graceful"
 	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/version"
 )
@@ -41,6 +43,8 @@ func main() {
 	}
 	ctx := context.Background()
 	app := client.NewClient(ctx, cfg.Agent)
-	app.Run(ctx)
-
+	graceful.
+		NewManager(app).
+		Notify(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM).
+		Run(ctx)
 }

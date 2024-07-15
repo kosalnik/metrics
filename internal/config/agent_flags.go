@@ -65,7 +65,7 @@ func ParseAgentFlags(args []string, c *Agent) error {
 		publicKeyFile = &v
 	}
 
-	if publicKeyFile != nil {
+	if publicKeyFile != nil && *publicKeyFile != "" {
 		publicKeyPEM, err := os.ReadFile(*publicKeyFile)
 		if err != nil {
 			return fmt.Errorf("fail to read key: %w", err)

@@ -4,9 +4,11 @@ package main
 import (
 	"context"
 	"os"
+	"syscall"
 
 	"github.com/kosalnik/metrics/internal/application/server"
 	"github.com/kosalnik/metrics/internal/config"
+	"github.com/kosalnik/metrics/internal/graceful"
 	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/version"
 )
@@ -23,6 +25,7 @@ func main() {
 		BuildDate:    buildDate,
 		BuildCommit:  buildCommit,
 	}.Print(os.Stdout)
+	ctx := context.Background()
 	cfg := config.NewConfig()
 	if err := config.ParseServerFlags(os.Args, &cfg.Server); err != nil {
 		panic(err.Error())
@@ -31,8 +34,8 @@ func main() {
 	if err := log.InitLogger(cfg.Server.Logger.Level); err != nil {
 		panic(err.Error())
 	}
-	err := app.Run(context.Background())
-	if err != nil {
-		log.Panic().Err(err).Msg("panic")
-	}
+	graceful.
+		NewManager(app).
+		Notify(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM).
+		Run(ctx)
 }

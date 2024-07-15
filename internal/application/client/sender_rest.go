@@ -21,11 +21,15 @@ type SenderRest struct {
 }
 
 func NewSenderRest(config *config.Agent) Sender {
-	c := http.Client{
-		Transport: crypt.NewCipherInterceptor(
+	var transport http.RoundTripper = crypt.VerifyHashInterceptor(config.Hash, http.DefaultTransport)
+	if config.PublicKey != nil {
+		transport = crypt.NewCipherInterceptor(
 			crypt.NewEncoder(config.PublicKey, rand.Reader),
-			crypt.VerifyHashInterceptor(config.Hash, http.DefaultTransport),
-		),
+			transport,
+		)
+	}
+	c := http.Client{
+		Transport: transport,
 	}
 	return &SenderRest{
 		client: &c,

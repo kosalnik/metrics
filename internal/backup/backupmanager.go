@@ -82,11 +82,23 @@ func (m *BackupManager) BackupLoop(ctx context.Context) {
 				continue
 			}
 			log.Info().Msg("backup loop: store")
-			if err := m.dump.Store(ctx); err != nil {
+			if err := m.Store(ctx); err != nil {
 				log.Error().Err(err).Msg("Fail backup")
 			}
 		}
 	}
+}
+
+func (m *BackupManager) Store(ctx context.Context) (err error) {
+	log.Info().Msg("Backup start")
+	defer func() {
+		if err != nil {
+			log.Error().Err(err).Msg("Backup error")
+		} else {
+			log.Info().Msg("Backup completed")
+		}
+	}()
+	return m.dump.Store(ctx)
 }
 
 // Recover - восстановить данные из бекапа.
