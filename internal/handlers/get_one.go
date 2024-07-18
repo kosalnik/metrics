@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/models"
 	"github.com/kosalnik/metrics/internal/storage"
 )
@@ -17,7 +17,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		data, err := io.ReadAll(req.Body)
-		logger.Logger.WithField("body", string(data)).Info("Handle Get")
+		log.Info().Str("body", string(data)).Msg("Handle Get")
 		if err != nil {
 			http.Error(w, `"Wrong data"`, http.StatusBadRequest)
 			return
@@ -40,7 +40,7 @@ func NewRestGetHandler(s storage.Storage) func(res http.ResponseWriter, req *htt
 			if out, err := json.Marshal(v); err != nil {
 				http.Error(w, `"internal error"`, http.StatusInternalServerError)
 			} else {
-				logger.Logger.WithField("body", string(out)).Info("Handle Get Result")
+				log.Info().Str("body", string(out)).Msg("Handle Get Result")
 				_, _ = w.Write(out)
 			}
 			return

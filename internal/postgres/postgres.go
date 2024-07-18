@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/models"
 )
 
@@ -33,14 +33,16 @@ func NewDBStorage(db *sql.DB) (*DBStorage, error) {
 	return &DBStorage{mu: sync.Mutex{}, updatedAt: time.Now(), db: db}, nil
 }
 
-func (d *DBStorage) InitTables(ctx context.Context) error {
-	if _, err := d.db.ExecContext(ctx, schemaCounterSQL); err != nil {
-		return err
-	}
-	if _, err := d.db.ExecContext(ctx, schemaGaugeSQL); err != nil {
-		return err
-	}
-	return nil
+func (d *DBStorage) CreateTablesIfNotExist(ctx context.Context) error {
+	return d.inTransaction(ctx, func(tr *sql.Tx) error {
+		if _, err := d.db.ExecContext(ctx, schemaCounterSQL); err != nil {
+			return err
+		}
+		if _, err := d.db.ExecContext(ctx, schemaGaugeSQL); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (d *DBStorage) GetGauge(ctx context.Context, name string) (*models.Metrics, error) {
@@ -50,7 +52,7 @@ func (d *DBStorage) GetGauge(ctx context.Context, name string) (*models.Metrics,
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		logger.Logger.WithError(err).Error("fail db request. get gauge")
+		log.Error().Err(err).Msg("fail db request. get gauge")
 		return nil, err
 	}
 	return &models.Metrics{ID: name, MType: models.MGauge, Value: v}, nil
@@ -60,7 +62,7 @@ func (d *DBStorage) SetGauge(ctx context.Context, name string, value float64) (*
 	s := "INSERT INTO gauge (id, value) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET value = $2"
 	_, err := d.db.ExecContext(ctx, s, name, value)
 	if err != nil {
-		logger.Logger.WithError(err).Error("fail db request. set gauge")
+		log.Error().Err(err).Msg("fail db request. set gauge")
 
 		return nil, err
 	}
@@ -77,7 +79,7 @@ func (d *DBStorage) GetCounter(ctx context.Context, name string) (*models.Metric
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		logger.Logger.WithError(err).Error("fail db request. get counter")
+		log.Error().Err(err).Msg("fail db request. get counter")
 
 		return nil, err
 	}
@@ -88,7 +90,7 @@ func (d *DBStorage) IncCounter(ctx context.Context, name string, value int64) (*
 	s := "INSERT INTO counter (id, value) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET value = counter.value + $2"
 	_, err := d.db.ExecContext(ctx, s, name, value)
 	if err != nil {
-		logger.Logger.WithError(err).Error("fail db request. inc counter")
+		log.Error().Err(err).Msg("fail db request. inc counter")
 		return nil, err
 	}
 	d.setUpdatedAt()
@@ -131,7 +133,7 @@ func (d *DBStorage) UpsertAll(ctx context.Context, list []models.Metrics) (err e
 			return fmt.Errorf("fail upsert: %w", err)
 		}
 		defer setGaugeSt.Close()
-		logger.Logger.WithField("list", list).Info("upsertAll")
+		log.Info().Any("list", list).Msg("upsertAll")
 		for _, v := range list {
 			switch v.MType {
 			case models.MGauge:

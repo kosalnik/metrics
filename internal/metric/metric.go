@@ -9,7 +9,7 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/mem"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 )
 
 func GetMetrics(ctx context.Context) (map[string]float64, error) {
@@ -49,14 +49,14 @@ func GetMetrics(ctx context.Context) (map[string]float64, error) {
 	if cpuUsage, err := cpu.PercentWithContext(ctx, 0, false); err == nil {
 		r["CPUutilization1"] = float64(cpuUsage[0])
 	} else {
-		logger.Logger.WithError(err).Error("get cpu usage fail")
+		log.Error().Err(err).Msg("get cpu usage fail")
 	}
 
 	if memUsage, err := mem.VirtualMemory(); err == nil {
 		r["TotalMemory"] = float64(memUsage.Total)
 		r["FreeMemory"] = float64(memUsage.Free)
 	} else {
-		logger.Logger.WithError(err).Error("get memory usage fail")
+		log.Error().Err(err).Msg("get memory usage fail")
 	}
 
 	return r, nil

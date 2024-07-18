@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/models"
 	"github.com/kosalnik/metrics/internal/storage"
 )
@@ -14,7 +14,7 @@ func NewUpdateBatchHandler(s storage.BatchInserter) func(res http.ResponseWriter
 	return func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "application/json")
 		data, err := io.ReadAll(req.Body)
-		logger.Logger.Debugf("Handle %s", data)
+		log.Debug().Str("data", string(data)).Msg("Handle batch update")
 		if err != nil {
 			http.Error(res, `"Wrong data"`, http.StatusBadRequest)
 			return

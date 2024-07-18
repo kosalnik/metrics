@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/storage"
 )
 
@@ -23,7 +23,7 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 		}
 		items, err := s.GetAll(req.Context())
 		if err != nil {
-			logger.Logger.WithError(err).Error("fail get all")
+			log.Error().Err(err).Msg("fail get all")
 			http.Error(w, `"fail get all"`, http.StatusInternalServerError)
 
 			return
@@ -43,14 +43,14 @@ func NewGetAllHandler(s storage.Storage) func(res http.ResponseWriter, req *http
 		} else {
 			t := make([]string, len(items))
 			for i, v := range items {
-				logger.Logger.WithField("v", v).Info("asdf")
+				log.Info().Any("v", v).Msg("get all metrics")
 				t[i] = v.String()
 			}
 			sort.Strings(t)
 			data = []byte(strings.Join(t, "\n"))
 		}
 		if _, err := w.Write(data); err != nil {
-			logger.Logger.WithError(err).Error("fail write response")
+			log.Error().Err(err).Msg("fail write response")
 		}
 	}
 }

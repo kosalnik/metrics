@@ -24,14 +24,15 @@ type PostgresSuite struct {
 func (s *PostgresSuite) SetupTest() {
 	dsn := os.Getenv("TEST_DSN")
 	if dsn == "" {
-		s.FailNow("Unable to connect with DB. Env TEST_DSN is not specified")
+		s.T().Skip("Unable to connect with DB. Env TEST_DSN is not specified")
+		return
 	}
 	db, err := postgres.NewConn(dsn)
 	s.Require().NoError(err)
 	s.db = db
 	s.storage, err = postgres.NewDBStorage(s.db)
 	s.Require().NoError(err)
-	s.Require().NoError(s.storage.InitTables(context.Background()))
+	s.Require().NoError(s.storage.CreateTablesIfNotExist(context.Background()))
 }
 
 func TestDBStorage(t *testing.T) {

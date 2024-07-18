@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/models"
 
 	"github.com/kosalnik/metrics/internal/config"
@@ -30,12 +28,12 @@ func NewSenderSimple(config *config.Agent) Sender {
 func (c *SenderSimple) SendGauge(k string, v float64) {
 	r, err := c.client.Post(fmt.Sprintf("http://%s/update/gauge/%s/%v", c.config.CollectorAddress, k, v), "text/plain", nil)
 	if err != nil {
-		logger.Logger.Errorf("fail push. %s", err.Error())
+		log.Error().Err(err).Msg("fail push")
 		return
 	}
 	defer func() {
 		if err := r.Body.Close(); err != nil {
-			logger.Logger.Errorf("fail close body. %s", err.Error())
+			log.Error().Err(err).Msg("fail close body")
 		}
 	}()
 }
@@ -43,12 +41,12 @@ func (c *SenderSimple) SendGauge(k string, v float64) {
 func (c *SenderSimple) SendCounter(k string, v int64) {
 	r, err := c.client.Post(fmt.Sprintf("http://%s/update/counter/%s/%v", c.config.CollectorAddress, k, v), "text/plain", nil)
 	if err != nil {
-		logger.Logger.Errorf("Fail push: %s", err.Error())
+		log.Error().Err(err).Msg("Fail push")
 		return
 	}
 	defer func() {
 		if err := r.Body.Close(); err != nil {
-			logger.Logger.Errorf("fail close body. %s", err.Error())
+			log.Error().Err(err).Msg("fail close body")
 		}
 	}()
 }
@@ -59,7 +57,7 @@ func (c *SenderSimple) SendBatch(ctx context.Context, list []models.Metrics) err
 	}
 	data, err := json.Marshal(list)
 	if err != nil {
-		logger.Logger.WithField("list", list).WithError(err).Error("fail send batch. fail marshal")
+		log.Error().Any("list", list).Err(err).Msg("fail send batch. fail marshal")
 
 		return err
 	}
@@ -67,22 +65,22 @@ func (c *SenderSimple) SendBatch(ctx context.Context, list []models.Metrics) err
 	url := fmt.Sprintf("http://%s/updates/", c.config.CollectorAddress)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 	if err != nil {
-		logger.Logger.WithError(err).Errorf("send batch. fail make request")
+		log.Error().Err(err).Msg("send batch. fail make request")
 
 		return err
 	}
 	req.Header.Set("Accept-Encoding", "gzip, deflate")
 	req.Header.Set("Content-Type", "application/json")
 	r, err := c.client.Do(req)
-	logger.Logger.WithFields(logrus.Fields{"url": url, "body": string(data)}).Info("send counter")
+	log.Info().Str("url", url).Str("body", string(data)).Msg("send counter")
 	if err != nil {
-		logger.Logger.WithError(err).Error("Fail push")
+		log.Error().Err(err).Msg("Fail push")
 
 		return err
 	}
 	defer func() {
 		if err := r.Body.Close(); err != nil {
-			logger.Logger.WithError(err).Error("fail close body")
+			log.Error().Err(err).Msg("fail close body")
 		}
 	}()
 

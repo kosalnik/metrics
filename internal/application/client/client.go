@@ -11,9 +11,10 @@ import (
 	"time"
 
 	"github.com/kosalnik/metrics/internal/config"
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
 	"github.com/kosalnik/metrics/internal/metric"
 	"github.com/kosalnik/metrics/internal/models"
+	"golang.org/x/sync/errgroup"
 )
 
 type Client struct {
@@ -35,25 +36,53 @@ func NewClient(ctx context.Context, config config.Agent) *Client {
 	}
 }
 
-func (c *Client) Run(ctx context.Context) {
-	logger.Logger.Infof("Poll interval: %d", c.config.PollInterval)
-	logger.Logger.Infof("Report interval: %d", c.config.ReportInterval)
-	logger.Logger.Infof("Collector address: %s", c.config.CollectorAddress)
-	go c.poll(ctx)
-	c.push(ctx)
+func (c *Client) Run(ctx context.Context) error {
+	g := errgroup.Group{}
+	g.Go(func() error {
+		return c.RunMetricsSender(ctx)
+	})
+	g.Go(func() error {
+		return c.RunMetricsPoller(ctx)
+	})
+	return g.Wait()
 }
 
-func (c *Client) push(ctx context.Context) {
+// RunMetricsSender Запустить процесс периодической отправки метрик в коллектор
+func (c *Client) RunMetricsSender(ctx context.Context) error {
+	log.Info().
+		Int64("Report interval", c.config.ReportInterval).
+		Str("Collector address", c.config.CollectorAddress).
+		Msg("Running agent")
+	return c.push(ctx)
+}
+
+// RunMetricsPoller Запустить процесс периодического сбора метрик
+func (c *Client) RunMetricsPoller(ctx context.Context) error {
+	log.Info().
+		Int64("Poll interval", c.config.PollInterval).
+		Msg("Running metrics poll process")
+	return c.poll(ctx)
+}
+
+func (c *Client) Shutdown(ctx context.Context) {
+	log.Info().Msg("Shutdown service Client")
+	if err := c.sender.SendBatch(ctx, c.collectMetrics()); err != nil {
+		log.Error().Err(err).Msg("fail push")
+	}
+	log.Info().Msg("Shutdown service Client completed")
+}
+
+func (c *Client) push(ctx context.Context) error {
 	tick := time.NewTicker(time.Duration(c.config.ReportInterval) * time.Second)
 	defer tick.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return ctx.Err()
 		case <-tick.C:
-			logger.Logger.Info("Push")
+			log.Info().Msg("Push")
 			if err := c.sender.SendBatch(ctx, c.collectMetrics()); err != nil {
-				logger.Logger.WithError(err).Error("fail push")
+				log.Error().Err(err).Msg("fail push")
 			}
 		}
 	}
@@ -83,16 +112,16 @@ func (c *Client) collectMetrics() []models.Metrics {
 	return list
 }
 
-func (c *Client) poll(ctx context.Context) {
+func (c *Client) poll(ctx context.Context) error {
 	tick := time.NewTicker(time.Duration(c.config.PollInterval) * time.Second)
 	defer tick.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return ctx.Err()
 		case <-tick.C:
 			if err := c.pollMetrics(ctx); err != nil {
-				logger.Logger.WithError(err).Errorf("poll error")
+				log.Error().Err(err).Msg("poll error")
 			}
 		}
 	}
@@ -107,7 +136,7 @@ func (c *Client) pollMetrics(ctx context.Context) error {
 		return err
 	}
 	c.pollCount = c.pollCount + 1
-	logger.Logger.WithField("count", c.pollCount).Debug("PollCount")
+	log.Debug().Int64("count", c.pollCount).Msg("PollCount")
 
 	return nil
 }

@@ -3,9 +3,20 @@
 package config
 
 import (
+	"crypto/rsa"
+	_ "embed"
+
 	"github.com/kosalnik/metrics/internal/backup"
 	"github.com/kosalnik/metrics/internal/crypt"
-	"github.com/kosalnik/metrics/internal/logger"
+	"github.com/kosalnik/metrics/internal/log"
+)
+
+const (
+	defaultServerBind       = ":8080"
+	defaultCollectorAddress = "127.0.0.1:8080"
+	defaultPollInterval     = 2
+	defaultReportInterval   = 10
+	defaultRateLimit        = 1
 )
 
 type Config struct {
@@ -14,22 +25,24 @@ type Config struct {
 }
 
 type Agent struct {
-	CollectorAddress string
+	CollectorAddress string         `json:"address"`
+	PollInterval     int64          `json:"poll_interval"`
+	ReportInterval   int64          `json:"report_interval"`
+	PublicKey        *rsa.PublicKey `json:"crypto_key"`
+	RateLimit        int64          `json:"rate_limit"`
 	Hash             crypt.Config
-	Logger           logger.Config
-	PollInterval     int64
-	ReportInterval   int64
-	RateLimit        int64
+	Logger           log.Config
 	Profiling        Profiling
 }
 
 type Server struct {
-	Logger    logger.Config
-	DB        DB
-	Hash      crypt.Config
-	Address   string
-	Backup    backup.Config
-	Profiling Profiling
+	Address    string          `json:"address"`
+	Backup     backup.Config   `json:"backup"`
+	PrivateKey *rsa.PrivateKey `json:"crypto_key"`
+	Logger     log.Config
+	DB         DB
+	Hash       crypt.Config
+	Profiling  Profiling
 }
 
 type Profiling struct {
@@ -44,7 +57,7 @@ func NewConfig() *Config {
 	return &Config{
 		Agent: Agent{
 			Profiling:        Profiling{},
-			Logger:           logger.Config{Level: "info"},
+			Logger:           log.Config{Level: "info"},
 			CollectorAddress: "127.0.0.1:8080",
 			PollInterval:     2,
 			ReportInterval:   10,
@@ -53,8 +66,8 @@ func NewConfig() *Config {
 		},
 		Server: Server{
 			Profiling: Profiling{},
-			Logger:    logger.Config{Level: "info"},
-			Address:   ":8080",
+			Logger:    log.Config{Level: "info"},
+			Address:   defaultServerBind,
 			Backup:    backup.Config{},
 			Hash:      crypt.Config{Key: ""},
 		},
@@ -64,19 +77,19 @@ func NewConfig() *Config {
 func NewAgent() *Agent {
 	return &Agent{
 		Profiling:        Profiling{},
-		Logger:           logger.Config{Level: "info"},
-		CollectorAddress: "127.0.0.1:8080",
-		PollInterval:     2,
-		ReportInterval:   10,
+		Logger:           log.Config{Level: "info"},
+		CollectorAddress: defaultCollectorAddress,
+		PollInterval:     defaultPollInterval,
+		ReportInterval:   defaultReportInterval,
 		Hash:             crypt.Config{Key: ""},
-		RateLimit:        1,
+		RateLimit:        defaultRateLimit,
 	}
 }
 
 func NewServer() *Server {
 	return &Server{
 		Profiling: Profiling{},
-		Logger:    logger.Config{Level: "info"},
+		Logger:    log.Config{Level: "info"},
 		Address:   ":8080",
 		Backup:    backup.Config{},
 		Hash:      crypt.Config{Key: ""},
