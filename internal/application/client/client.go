@@ -25,12 +25,12 @@ type Client struct {
 	mu        sync.Mutex
 }
 
-func NewClient(ctx context.Context, config config.Agent) *Client {
+func NewClient(ctx context.Context, config *config.Agent) *Client {
 	return &Client{
-		config: &config,
+		config: config,
 		sender: NewSenderPool(
 			ctx,
-			NewSenderRest(&config),
+			NewSenderRest(config),
 			int(config.RateLimit),
 		),
 	}

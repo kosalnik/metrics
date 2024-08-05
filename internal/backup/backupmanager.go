@@ -90,6 +90,10 @@ func (m *BackupManager) BackupLoop(ctx context.Context) {
 }
 
 func (m *BackupManager) Store(ctx context.Context) (err error) {
+	if m == nil || m.dump == nil {
+		log.Info().Msg("Store skipped")
+		return nil
+	}
 	log.Info().Msg("Backup start")
 	defer func() {
 		if err != nil {
@@ -105,7 +109,6 @@ func (m *BackupManager) Store(ctx context.Context) (err error) {
 func (m *BackupManager) Recover(ctx context.Context) error {
 	if m == nil || m.recover == nil {
 		log.Info().Msg("recover skipped")
-
 		return nil
 	}
 

@@ -26,12 +26,12 @@ func main() {
 		BuildCommit:  buildCommit,
 	}.Print(os.Stdout)
 	ctx := context.Background()
-	cfg := config.NewConfig()
-	if err := config.ParseServerFlags(os.Args, &cfg.Server); err != nil {
+	cfg := config.NewServer()
+	if err := config.ParseServerFlags(os.Args, cfg); err != nil {
 		panic(err.Error())
 	}
-	app := server.NewApp(cfg.Server)
-	if err := log.InitLogger(cfg.Server.Logger.Level); err != nil {
+	app := server.NewApp(cfg)
+	if err := log.InitLogger(cfg.Logger.Level); err != nil {
 		panic(err.Error())
 	}
 	graceful.
