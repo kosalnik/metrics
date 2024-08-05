@@ -21,11 +21,15 @@ type SenderRest struct {
 }
 
 func NewSenderRest(config *config.Agent) Sender {
+	mutators := []Mutator{
+		SetRealIPMutator(),
+		crypt.NewSignMutator([]byte(config.Hash.Key)),
+	}
+	if config.PublicKey != nil {
+		mutators = append(mutators, crypt.NewCipherRequestMutator(crypt.NewEncoder(config.PublicKey, rand.Reader)))
+	}
 	return &SenderRest{
-		client: NewHttpClient(WithMutators(
-			crypt.NewSignMutator([]byte(config.Hash.Key)),
-			crypt.NewCipherRequestMutator(crypt.NewEncoder(config.PublicKey, rand.Reader)),
-		)),
+		client: NewHttpClient(WithMutators(mutators...)),
 		config: config,
 	}
 }

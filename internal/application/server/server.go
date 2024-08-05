@@ -6,6 +6,7 @@ package server
 import (
 	"context"
 	"crypto/rand"
+	"net"
 	"net/http"
 	"os"
 
@@ -143,6 +144,14 @@ func (app *App) GetRouter() chi.Router {
 		r.Use(crypt.CipherMiddleware(crypt.NewDecoder(app.config.PrivateKey, rand.Reader)))
 	}
 
+	if app.config.TrustedSubnet != "" {
+		log.Info().Str("CIDR", app.config.TrustedSubnet).Msg("Protect with trusted subnet")
+		_, subnet, err := net.ParseCIDR(app.config.TrustedSubnet)
+		if err != nil {
+			panic(err)
+		}
+		r.Use(TrustedClientMiddleware(subnet))
+	}
 	r.Use(
 		middleware.Compress(1, "application/json", "text/html"),
 		middleware.Logger,
