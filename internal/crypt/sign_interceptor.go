@@ -1,44 +1,26 @@
 package crypt
 
 import (
-	"bytes"
-	"context"
-	"io"
 	"net/http"
 )
 
 func VerifyHashInterceptor(cfg Config, transport http.RoundTripper) *AddHash {
 	return &AddHash{
-		core: transport,
-		key:  []byte(cfg.Key),
+		core:   transport,
+		signer: NewSignMutator([]byte(cfg.Key)),
 	}
 }
 
 type AddHash struct {
-	core http.RoundTripper
-	key  []byte
+	core   http.RoundTripper
+	signer func(r *http.Request) (*http.Request, error)
 }
 
 func (a *AddHash) RoundTrip(request *http.Request) (*http.Response, error) {
-	if len(a.key) == 0 || request.Body == nil {
-		return a.core.RoundTrip(request)
-	}
-
-	b, err := io.ReadAll(request.Body)
+	req, err := a.signer(request)
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if request.Body != nil {
-			request.Body.Close()
-		}
-	}()
-
-	h := GetSign(b, a.key)
-	req := request.Clone(context.Background())
-	req.Body = io.NopCloser(bytes.NewReader(b))
-	ToSignRequest(req, h)
-
 	return a.core.RoundTrip(req)
 }
 
