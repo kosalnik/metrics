@@ -19,11 +19,6 @@ const (
 	defaultRateLimit        = 1
 )
 
-type Config struct {
-	Server Server
-	Agent  Agent
-}
-
 type Agent struct {
 	CollectorAddress string         `json:"address"`
 	PollInterval     int64          `json:"poll_interval"`
@@ -36,13 +31,14 @@ type Agent struct {
 }
 
 type Server struct {
-	Address    string          `json:"address"`
-	Backup     backup.Config   `json:"backup"`
-	PrivateKey *rsa.PrivateKey `json:"crypto_key"`
-	Logger     log.Config
-	DB         DB
-	Hash       crypt.Config
-	Profiling  Profiling
+	Address       string          `json:"address"`
+	TrustedSubnet string          `json:"trusted_subnet"`
+	Backup        backup.Config   `json:"backup"`
+	PrivateKey    *rsa.PrivateKey `json:"crypto_key"`
+	Logger        log.Config
+	DB            DB
+	Hash          crypt.Config
+	Profiling     Profiling
 }
 
 type Profiling struct {
@@ -51,27 +47,6 @@ type Profiling struct {
 
 type DB struct {
 	DSN string
-}
-
-func NewConfig() *Config {
-	return &Config{
-		Agent: Agent{
-			Profiling:        Profiling{},
-			Logger:           log.Config{Level: "info"},
-			CollectorAddress: "127.0.0.1:8080",
-			PollInterval:     2,
-			ReportInterval:   10,
-			Hash:             crypt.Config{Key: ""},
-			RateLimit:        1,
-		},
-		Server: Server{
-			Profiling: Profiling{},
-			Logger:    log.Config{Level: "info"},
-			Address:   defaultServerBind,
-			Backup:    backup.Config{},
-			Hash:      crypt.Config{Key: ""},
-		},
-	}
 }
 
 func NewAgent() *Agent {
@@ -90,7 +65,7 @@ func NewServer() *Server {
 	return &Server{
 		Profiling: Profiling{},
 		Logger:    log.Config{Level: "info"},
-		Address:   ":8080",
+		Address:   defaultServerBind,
 		Backup:    backup.Config{},
 		Hash:      crypt.Config{Key: ""},
 	}

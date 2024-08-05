@@ -16,23 +16,16 @@ import (
 )
 
 type SenderRest struct {
-	client *http.Client
+	client *HttpClientWrapper
 	config *config.Agent
 }
 
 func NewSenderRest(config *config.Agent) Sender {
-	var transport http.RoundTripper = crypt.VerifyHashInterceptor(config.Hash, http.DefaultTransport)
-	if config.PublicKey != nil {
-		transport = crypt.NewCipherInterceptor(
-			crypt.NewEncoder(config.PublicKey, rand.Reader),
-			transport,
-		)
-	}
-	c := http.Client{
-		Transport: transport,
-	}
 	return &SenderRest{
-		client: &c,
+		client: NewHttpClient(WithMutators(
+			crypt.NewSignMutator([]byte(config.Hash.Key)),
+			crypt.NewCipherRequestMutator(crypt.NewEncoder(config.PublicKey, rand.Reader)),
+		)),
 		config: config,
 	}
 }

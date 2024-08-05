@@ -25,12 +25,12 @@ import (
 
 type App struct {
 	Storage       storage.Storage
-	config        config.Server
+	config        *config.Server
 	server        *http.Server
 	backupManager *backup.BackupManager
 }
 
-func NewApp(cfg config.Server) *App {
+func NewApp(cfg *config.Server) *App {
 	return &App{
 		config: cfg,
 	}
