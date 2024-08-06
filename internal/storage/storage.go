@@ -10,7 +10,7 @@ import (
 )
 
 //go:generate mockgen -source=storage.go -destination=./mock/storage.go -package=mock
-type Storage interface {
+type Storager interface {
 	Dumper
 	BatchInserter
 	UpdateAwarer

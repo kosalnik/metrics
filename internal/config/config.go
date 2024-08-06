@@ -32,6 +32,7 @@ type Agent struct {
 
 type Server struct {
 	Address       string          `json:"address"`
+	GRPCAddress   string          `json:"grpc_address"`
 	TrustedSubnet string          `json:"trusted_subnet"`
 	Backup        backup.Config   `json:"backup"`
 	PrivateKey    *rsa.PrivateKey `json:"crypto_key"`

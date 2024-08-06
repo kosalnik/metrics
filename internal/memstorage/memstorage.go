@@ -27,7 +27,7 @@ func NewMemStorage() *MemStorage {
 	}
 }
 
-var _ storage.Storage = &MemStorage{}
+var _ storage.Storager = &MemStorage{}
 
 func (m *MemStorage) GetGauge(_ context.Context, name string) (*models.Metrics, error) {
 	m.mu.Lock()

@@ -46,6 +46,9 @@ func ParseServerFlags(args []string, c *Server) error {
 	if v := os.Getenv("ADDRESS"); v != "" {
 		c.Address = v
 	}
+	if v := os.Getenv("GRPC_ADDRESS"); v != "" {
+		c.GRPCAddress = v
+	}
 	if v := os.Getenv("STORE_INTERVAL"); v != "" {
 		c.Backup.StoreInterval, err = strconv.Atoi(v)
 		if err != nil {

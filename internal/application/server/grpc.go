@@ -2,42 +2,54 @@ package server
 
 import (
 	"context"
-	"net"
 
-	"github.com/kosalnik/metrics/internal/log"
+	"github.com/kosalnik/metrics/internal/models"
+	"github.com/kosalnik/metrics/internal/storage"
 	pb "github.com/kosalnik/metrics/pkg/metrics"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type GRPCServer struct {
 	pb.UnimplementedMetricsServer
+	storage storage.Storager
 }
 
-func NewGRPCServer(ctx context.Context, addr string) {
-	log.Info().Str("addr", addr).Msg("Listen grpc")
-	listen, err := net.Listen("tcp", addr)
+func (g *GRPCServer) AddGauge(ctx context.Context, in *pb.MetricsItem) (*pb.SimpleResponse, error) {
+	_, err := g.storage.SetGauge(ctx, in.Id, *in.Value)
 	if err != nil {
-		log.Fatal().Err(err).Msg("new grpc server fails")
+		return &pb.SimpleResponse{Error: "fail set gauge"}, nil
 	}
-	s := grpc.NewServer()
-	pb.RegisterMetricsServer(s, &GRPCServer{})
-	go func() {
-		<-ctx.Done()
-		s.GracefulStop()
-	}()
-	if err := s.Serve(listen); err != nil {
-		log.Error().Err(err).Msg("Listen grpc fails")
-	}
+	return &pb.SimpleResponse{Success: true}, nil
 }
 
-func (g *GRPCServer) AddGauge(context.Context, *pb.MetricsItem) (*pb.SimpleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddGauge not implemented")
+func (g *GRPCServer) AddCounter(ctx context.Context, in *pb.MetricsItem) (*pb.SimpleResponse, error) {
+	_, err := g.storage.IncCounter(ctx, in.Id, *in.Delta)
+	if err != nil {
+		return &pb.SimpleResponse{Error: "fail set counter"}, nil
+	}
+	return &pb.SimpleResponse{Success: true}, nil
 }
-func (g *GRPCServer) AddCounter(context.Context, *pb.MetricsItem) (*pb.SimpleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddCounter not implemented")
-}
-func (g *GRPCServer) AddBatch(context.Context, *pb.MetricsList) (*pb.SimpleResponse, error) {
+func (g *GRPCServer) AddBatch(ctx context.Context, in *pb.MetricsList) (*pb.SimpleResponse, error) {
+	var list []models.Metrics
+	for _, v := range in.Items {
+		var m models.Metrics
+		switch v.Type {
+		case pb.MType_GAUGE:
+			m = models.Metrics{ID: v.Id, MType: models.MGauge, Value: *v.Value}
+		case pb.MType_COUNTER:
+			m = models.Metrics{ID: v.Id, MType: models.MCounter, Delta: *v.Delta}
+		}
+		if m.MType == "" {
+			continue
+		}
+		list = append(list, m)
+	}
+	if len(list) == 0 {
+		return &pb.SimpleResponse{Success: true}, nil
+	}
+	if err := g.storage.UpsertAll(ctx, list); err != nil {
+		return &pb.SimpleResponse{Error: "fail batch update"}, nil
+	}
 	return nil, status.Errorf(codes.Unimplemented, "method AddBatch not implemented")
 }

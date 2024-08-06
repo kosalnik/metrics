@@ -22,7 +22,7 @@ func TestUpdateHandler_Handle(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		storage storage.Storage
+		storage storage.Storager
 		method  string
 		path    string
 		want    want
@@ -102,7 +102,7 @@ func TestRestUpdateHandler_Handle(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		storage storage.Storage
+		storage storage.Storager
 		method  string
 		req     string
 		want    want

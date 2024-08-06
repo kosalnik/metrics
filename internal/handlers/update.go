@@ -14,7 +14,7 @@ import (
 	"github.com/kosalnik/metrics/internal/storage"
 )
 
-func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
+func NewRestUpdateHandler(s storage.Storager) func(res http.ResponseWriter, req *http.Request) {
 	return func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "application/json")
 		data, err := io.ReadAll(req.Body)
@@ -58,7 +58,7 @@ func NewRestUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *
 	}
 }
 
-func NewUpdateHandler(s storage.Storage) func(res http.ResponseWriter, req *http.Request) {
+func NewUpdateHandler(s storage.Storager) func(res http.ResponseWriter, req *http.Request) {
 	return func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "text/plain")
 		mType := models.MType(chi.URLParam(req, "type"))
