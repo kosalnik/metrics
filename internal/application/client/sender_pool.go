@@ -33,6 +33,9 @@ func NewSenderPool(ctx context.Context, client Sender, num int) *SenderPool {
 	return p
 }
 
+func (p *SenderPool) Shutdown(_ context.Context) {
+}
+
 func (p *SenderPool) SendGauge(k string, v float64) {
 	p.jobs <- func() {
 		p.client.SendGauge(k, v)

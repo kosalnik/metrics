@@ -27,14 +27,14 @@ func main() {
 		BuildDate:    buildDate,
 		BuildCommit:  buildCommit,
 	}.Print(os.Stdout)
-	cfg := config.NewConfig()
-	if err := config.ParseAgentFlags(os.Args, &cfg.Agent); err != nil {
+	cfg := config.NewAgent()
+	if err := config.ParseAgentFlags(os.Args, cfg); err != nil {
 		panic(err.Error())
 	}
-	if err := log.InitLogger(cfg.Agent.Logger.Level); err != nil {
+	if err := log.InitLogger(cfg.Logger.Level); err != nil {
 		panic(err.Error())
 	}
-	if cfg.Agent.Profiling.Enabled {
+	if cfg.Profiling.Enabled {
 		go func() {
 			if err := http.ListenAndServe(":18080", nil); err != nil {
 				panic(err)
@@ -42,7 +42,7 @@ func main() {
 		}()
 	}
 	ctx := context.Background()
-	app := client.NewClient(ctx, cfg.Agent)
+	app := client.NewClient(ctx, cfg)
 	graceful.
 		NewManager(app).
 		Notify(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM).

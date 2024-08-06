@@ -6,12 +6,16 @@ package server
 import (
 	"context"
 	"crypto/rand"
+	"net"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	pb "github.com/kosalnik/metrics/pkg/metrics"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 
 	"github.com/kosalnik/metrics/internal/backup"
 	"github.com/kosalnik/metrics/internal/config"
@@ -24,13 +28,14 @@ import (
 )
 
 type App struct {
-	Storage       storage.Storage
-	config        config.Server
+	Storage       storage.Storager
+	config        *config.Server
 	server        *http.Server
+	grpcServer    *grpc.Server
 	backupManager *backup.BackupManager
 }
 
-func NewApp(cfg config.Server) *App {
+func NewApp(cfg *config.Server) *App {
 	return &App{
 		config: cfg,
 	}
@@ -49,13 +54,40 @@ func (app *App) Run(ctx context.Context) error {
 		}
 	}()
 
-	app.server = &http.Server{
-		Addr:    app.config.Address,
-		Handler: app.GetRouter(),
+	wg := sync.WaitGroup{}
+
+	if app.config.GRPCAddress != "" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			log.Info().Str("addr", app.config.GRPCAddress).Msg("Listen grpc")
+			listen, err := net.Listen("tcp", app.config.GRPCAddress)
+			if err != nil {
+				log.Fatal().Err(err).Msg("new grpc server fails")
+			}
+			app.grpcServer = grpc.NewServer()
+			pb.RegisterMetricsServer(app.grpcServer, &GRPCServer{storage: app.Storage})
+			if err := app.grpcServer.Serve(listen); err != nil {
+				log.Error().Err(err).Msg("Listen grpc fails")
+			}
+		}()
 	}
 
-	log.Info().Str("address", app.config.Address).Msg("Listen")
-	return app.server.ListenAndServe()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		app.server = &http.Server{
+			Addr:    app.config.Address,
+			Handler: app.GetRouter(),
+		}
+
+		log.Info().Str("address", app.config.Address).Msg("Listen")
+		if err := app.server.ListenAndServe(); err != nil {
+			log.Error().Err(err).Msg("Listen http fails")
+		}
+	}()
+	wg.Wait()
+	return nil
 }
 
 func (app *App) Shutdown(ctx context.Context) {
@@ -84,6 +116,12 @@ func (app *App) Shutdown(ctx context.Context) {
 		err = app.backupManager.Store(ctx)
 		return
 	})
+	if app.grpcServer != nil {
+		g.Go(func() (_ error) {
+			log.Info().Msg(`Shutdown "grpc" start`)
+			return nil
+		})
+	}
 	if err := g.Wait(); err != nil {
 		log.Error().Err(err).Msg("Shutdown error")
 	}
@@ -143,6 +181,14 @@ func (app *App) GetRouter() chi.Router {
 		r.Use(crypt.CipherMiddleware(crypt.NewDecoder(app.config.PrivateKey, rand.Reader)))
 	}
 
+	if app.config.TrustedSubnet != "" {
+		log.Info().Str("CIDR", app.config.TrustedSubnet).Msg("Protect with trusted subnet")
+		_, subnet, err := net.ParseCIDR(app.config.TrustedSubnet)
+		if err != nil {
+			panic(err)
+		}
+		r.Use(TrustedClientMiddleware(subnet))
+	}
 	r.Use(
 		middleware.Compress(1, "application/json", "text/html"),
 		middleware.Logger,

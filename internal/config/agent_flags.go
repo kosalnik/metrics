@@ -46,6 +46,12 @@ func ParseAgentFlags(args []string, c *Agent) error {
 			return fmt.Errorf("REPORT_INTERVAL should be Int64, got: %s : %w", v, err)
 		}
 	}
+	if v := os.Getenv("GRPC"); v != "" {
+		c.GRPC, err = strconv.ParseBool(v)
+		if err != nil {
+			return fmt.Errorf("GRPC should be bool, got: %s : %w", v, err)
+		}
+	}
 	if v := os.Getenv("RATE_LIMIT"); v != "" {
 		c.RateLimit, err = strconv.ParseInt(v, 10, 64)
 		if err != nil {

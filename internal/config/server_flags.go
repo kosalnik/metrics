@@ -24,6 +24,7 @@ func ParseServerFlags(args []string, c *Server) error {
 	fs.BoolVar(&c.Backup.Restore, "r", true, "Restore storage before start")
 	fs.StringVar(&c.DB.DSN, "d", "", "Database DSN")
 	fs.StringVar(&c.Hash.Key, "k", "", "SHA256 Key")
+	fs.StringVar(&c.TrustedSubnet, "t", "", "Trusted Subnet")
 	privateKeyFile := fs.String("crypto-key", "", "Public Key")
 	_ = fs.String("config", "", "Config file")
 	_ = fs.String("c", "", "Config file (shorthand)")
@@ -45,6 +46,9 @@ func ParseServerFlags(args []string, c *Server) error {
 	if v := os.Getenv("ADDRESS"); v != "" {
 		c.Address = v
 	}
+	if v := os.Getenv("GRPC_ADDRESS"); v != "" {
+		c.GRPCAddress = v
+	}
 	if v := os.Getenv("STORE_INTERVAL"); v != "" {
 		c.Backup.StoreInterval, err = strconv.Atoi(v)
 		if err != nil {
@@ -65,6 +69,9 @@ func ParseServerFlags(args []string, c *Server) error {
 	}
 	if v := os.Getenv("KEY"); v != "" {
 		c.Hash.Key = v
+	}
+	if v := os.Getenv("TRUSTED_SUBNET"); v != "" {
+		c.TrustedSubnet = v
 	}
 	if v := os.Getenv("CRYPTO_KEY"); v != "" {
 		privateKeyFile = &v

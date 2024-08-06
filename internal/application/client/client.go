@@ -25,12 +25,20 @@ type Client struct {
 	mu        sync.Mutex
 }
 
-func NewClient(ctx context.Context, config config.Agent) *Client {
+func NewClient(ctx context.Context, config *config.Agent) *Client {
+	var sender Sender
+	if config.GRPC {
+		log.Info().Msg("Activate GRPC Collector")
+		sender = NewGRPCSender(ctx, config.CollectorAddress)
+	} else {
+		log.Info().Msg("Activate REST Collector")
+		sender = NewSenderRest(config)
+	}
 	return &Client{
-		config: &config,
+		config: config,
 		sender: NewSenderPool(
 			ctx,
-			NewSenderRest(&config),
+			sender,
 			int(config.RateLimit),
 		),
 	}

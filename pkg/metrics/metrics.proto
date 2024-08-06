@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package metrics;
+
+option go_package = "pkg/metrics";
+
+enum MType {
+  GAUGE = 0;
+  COUNTER = 1;
+}
+
+message MetricsItem {
+  string id = 1;
+  MType type = 2;
+  optional sint64 delta = 3;
+  optional double value = 4;
+}
+
+message MetricsList {
+  repeated MetricsItem Items = 1;
+}
+
+message SimpleResponse {
+  bool Success = 1;
+  string Error = 2;
+}
+
+service Metrics {
+  rpc AddGauge(MetricsItem) returns (SimpleResponse);
+  rpc AddCounter(MetricsItem) returns (SimpleResponse);
+  rpc AddBatch(MetricsList) returns (SimpleResponse);
+}
