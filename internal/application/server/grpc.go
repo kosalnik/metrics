@@ -6,8 +6,6 @@ import (
 	"github.com/kosalnik/metrics/internal/models"
 	"github.com/kosalnik/metrics/internal/storage"
 	pb "github.com/kosalnik/metrics/pkg/metrics"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type GRPCServer struct {
@@ -51,5 +49,5 @@ func (g *GRPCServer) AddBatch(ctx context.Context, in *pb.MetricsList) (*pb.Simp
 	if err := g.storage.UpsertAll(ctx, list); err != nil {
 		return &pb.SimpleResponse{Error: "fail batch update"}, nil
 	}
-	return nil, status.Errorf(codes.Unimplemented, "method AddBatch not implemented")
+	return &pb.SimpleResponse{Success: true}, nil
 }

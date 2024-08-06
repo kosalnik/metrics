@@ -21,6 +21,7 @@ const (
 
 type Agent struct {
 	CollectorAddress string         `json:"address"`
+	GRPC             bool           `json:"grpc"`
 	PollInterval     int64          `json:"poll_interval"`
 	ReportInterval   int64          `json:"report_interval"`
 	PublicKey        *rsa.PublicKey `json:"crypto_key"`
