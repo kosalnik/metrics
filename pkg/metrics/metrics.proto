@@ -12,7 +12,7 @@ enum MType {
 message MetricsItem {
   string id = 1;
   MType type = 2;
-  optional uint64 delta = 3;
+  optional sint64 delta = 3;
   optional double value = 4;
 }
 

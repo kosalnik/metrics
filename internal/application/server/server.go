@@ -50,29 +50,31 @@ func (app *App) Run(ctx context.Context) error {
 		}
 	}()
 
-	app.server = &http.Server{
-		Addr:    app.config.Address,
-		Handler: app.GetRouter(),
-	}
-
-	log.Info().Str("address", app.config.Address).Msg("Listen")
-	return app.server.ListenAndServe()
+	NewGRPCServer(ctx, app.config.Address)
+	return nil
+	// app.server = &http.Server{
+	//	Addr:    app.config.Address,
+	//	Handler: app.GetRouter(),
+	// }
+	//
+	// log.Info().Str("address", app.config.Address).Msg("Listen")
+	// return app.server.ListenAndServe()
 }
 
 func (app *App) Shutdown(ctx context.Context) {
 	log.Info().Msg(`Shutdown start`)
 	g := errgroup.Group{}
-	g.Go(func() (err error) {
-		log.Info().Msg(`Shutdown "server.App" start`)
-		defer func() {
-			if err != nil {
-				log.Error().Err(err).Msg(`Shutdown "server.App" error`)
-			} else {
-				log.Info().Msg(`Shutdown "server.App" completed`)
-			}
-		}()
-		return app.server.Shutdown(ctx)
-	})
+	// g.Go(func() (err error) {
+	//	log.Info().Msg(`Shutdown "server.App" start`)
+	//	defer func() {
+	//		if err != nil {
+	//			log.Error().Err(err).Msg(`Shutdown "server.App" error`)
+	//		} else {
+	//			log.Info().Msg(`Shutdown "server.App" completed`)
+	//		}
+	//	}()
+	//	return app.server.Shutdown(ctx)
+	// })
 	g.Go(func() (err error) {
 		log.Info().Msg(`Shutdown "backupManager" start`)
 		defer func() {
